@@ -29,13 +29,14 @@ class WebServer {
                 }
 
                 val parseResult = parser.parseReplay(file.name, file.content)
-                var result: Any = parseResult
 
                 if (parseResult is SuccessfulParseResponse) {
-                    result = transformer.transform(parseResult.replay)
+                    ctx.json(transformer.transform(parseResult.replay))
+                } else {
+                    ctx
+                        .status(HttpServletResponse.SC_BAD_REQUEST)
+                        .json(parseResult)
                 }
-
-                ctx.json(result)
             } ?: run {
                 ctx
                     .status(HttpServletResponse.SC_BAD_REQUEST)

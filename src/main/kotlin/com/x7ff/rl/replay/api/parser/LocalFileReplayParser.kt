@@ -20,16 +20,19 @@ class LocalFileReplayParser : ReplayParser {
     override fun parseReplay(name: String, content: InputStream): ParseResult {
         val fileName = File(name).nameWithoutExtension + ".json"
         val resource = javaClass.classLoader.getResource("replays/$fileName")
-        val fileContent = resource.readText()
 
-        val parsedReplayAdapter = moshi.adapter(ParsedReplay::class.java)
-        val parsedReplay = parsedReplayAdapter.fromJson(fileContent)
+        resource?.let {
+            val fileContent = resource.readText()
 
-        parsedReplay?.let {
-            return SuccessfulParseResponse(parsedReplay)
-        } ?: run {
+            val parsedReplayAdapter = moshi.adapter(ParsedReplay::class.java)
+            val parsedReplay = parsedReplayAdapter.fromJson(fileContent)
+
+            parsedReplay?.let {
+                return SuccessfulParseResponse(parsedReplay)
+            }
             return FailedParseResponse("Failed to parse replay JSON")
         }
+        return FailedParseResponse("Local parsed JSON file for replay not found")
     }
 
 }
