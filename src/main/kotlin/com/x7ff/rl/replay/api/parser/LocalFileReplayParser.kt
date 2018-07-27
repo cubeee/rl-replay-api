@@ -17,7 +17,7 @@ class LocalFileReplayParser : ReplayParser {
             .build()
     }
 
-    override fun parseReplay(name: String, content: InputStream): ParseResult {
+    override fun parseReplay(name: String, content: InputStream?): ParseResult {
         val fileName = File(name).nameWithoutExtension + ".json"
         val resource = javaClass.classLoader.getResource("replays/$fileName")
 

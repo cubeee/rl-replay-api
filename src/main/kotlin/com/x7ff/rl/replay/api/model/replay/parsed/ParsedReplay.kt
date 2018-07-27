@@ -14,7 +14,7 @@ data class ParsedReplay(
     ): Replay {
         val teams = parsedTeams.map { it.toTeam() }
         val parsedPlayers = parsedTeams.flatMap { it.players }
-        val demolitions = parsedDemolitions.map { it.toDemolition(parsedPlayers) }
+        val demolitions = parsedDemolitions.mapNotNull { it.toDemolition(parsedPlayers) }
 
         return Replay(
             name = name,

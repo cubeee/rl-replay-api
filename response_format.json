@@ -1,0 +1,179 @@
+{
+    "demolitions": [
+        {
+            "attacker": {
+                "id": 15,
+                "name": "Fairy Peak!"
+            },
+            "victim": {
+                "id": 12,
+                "name": "Tyranni"
+            }
+        },
+        {
+            "attacker": {
+                "id": 7,
+                "name": "FreaKii."
+            },
+            "victim": {
+                "id": 10,
+                "name": "Jii-Pee"
+            }
+        },
+        {
+            "attacker": {
+                "id": 12,
+                "name": "Tyranni"
+            },
+            "victim": {
+                "id": 5,
+                "name": "Paschy90"
+            }
+        },
+        {
+            "attacker": {
+                "id": 10,
+                "name": "Jii-Pee"
+            },
+            "victim": {
+                "id": 15,
+                "name": "Fairy Peak!"
+            }
+        }
+    ],
+    "name": "renault vitality",
+    "teams": [
+        {
+            "id": 0,
+            "name": "Blue",
+            "players": [
+                {
+                    "assists": 0,
+                    "cameraSettings": {
+                        "distance": 260,
+                        "fieldOfView": 100,
+                        "height": 120,
+                        "pitch": -3,
+                        "stiffness": 0.35,
+                        "swivelSpeed": 2.5,
+                        "transitionSpeed": 1.0
+                    },
+                    "goals": 0,
+                    "id": 2,
+                    "name": "qb",
+                    "onlineId": "76561198045967568",
+                    "saves": 1,
+                    "score": 145,
+                    "shots": 2,
+                    "steeringSensitivity": 1.3
+                },
+                {
+                    "assists": 0,
+                    "cameraSettings": {
+                        "distance": 250,
+                        "fieldOfView": 106,
+                        "height": 140,
+                        "pitch": -5,
+                        "stiffness": 0.3,
+                        "swivelSpeed": 1.5,
+                        "transitionSpeed": 1.0
+                    },
+                    "goals": 0,
+                    "id": 10,
+                    "name": "Jii-Pee",
+                    "onlineId": "76561198083104719",
+                    "saves": 0,
+                    "score": 125,
+                    "shots": 2,
+                    "steeringSensitivity": 1.0
+                },
+                {
+                    "assists": 0,
+                    "cameraSettings": {
+                        "distance": 290,
+                        "fieldOfView": 108,
+                        "height": 110,
+                        "pitch": -3,
+                        "stiffness": 0.35,
+                        "swivelSpeed": 4.2,
+                        "transitionSpeed": 1.5
+                    },
+                    "goals": 0,
+                    "id": 12,
+                    "name": "Tyranni",
+                    "onlineId": "76561197997159927",
+                    "saves": 1,
+                    "score": 45,
+                    "shots": 0,
+                    "steeringSensitivity": 1.0
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "name": "Red",
+            "players": [
+                {
+                    "assists": 0,
+                    "cameraSettings": {
+                        "distance": 270,
+                        "fieldOfView": 109,
+                        "height": 110,
+                        "pitch": -3,
+                        "stiffness": 0.45,
+                        "swivelSpeed": 3.0,
+                        "transitionSpeed": 1.0
+                    },
+                    "goals": 1,
+                    "id": 5,
+                    "name": "Paschy90",
+                    "onlineId": "76561198218283141",
+                    "saves": 0,
+                    "score": 180,
+                    "shots": 1,
+                    "steeringSensitivity": 1.0
+                },
+                {
+                    "assists": 1,
+                    "cameraSettings": {
+                        "distance": 270,
+                        "fieldOfView": 110,
+                        "height": 110,
+                        "pitch": -3,
+                        "stiffness": 0.4,
+                        "swivelSpeed": 10.0,
+                        "transitionSpeed": 1.1
+                    },
+                    "goals": 4,
+                    "id": 7,
+                    "name": "FreaKii.",
+                    "onlineId": "76561198080342535",
+                    "saves": 1,
+                    "score": 525,
+                    "shots": 7,
+                    "steeringSensitivity": 1.5
+                },
+                {
+                    "assists": 4,
+                    "cameraSettings": {
+                        "distance": 270,
+                        "fieldOfView": 110,
+                        "height": 110,
+                        "pitch": -3,
+                        "stiffness": 0.35,
+                        "swivelSpeed": 10.0,
+                        "transitionSpeed": 1.0
+                    },
+                    "goals": 2,
+                    "id": 15,
+                    "name": "Fairy Peak!",
+                    "onlineId": "76561198213713880",
+                    "saves": 2,
+                    "score": 600,
+                    "shots": 4,
+                    "steeringSensitivity": 1.2
+                }
+            ]
+        }
+    ]
+}

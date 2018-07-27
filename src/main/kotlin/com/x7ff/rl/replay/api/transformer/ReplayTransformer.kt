@@ -28,7 +28,7 @@ class ReplayTransformer {
                 shots = stats.shots,
                 cameraSettings = ParsedReplayCameraSettings.Default,
                 steeringSensitivity = 1.0f,
-                actorIds = mutableListOf()
+                actorIds = mutableSetOf()
             )
 
             players[player.name] = player
@@ -36,7 +36,6 @@ class ReplayTransformer {
         }
 
         // Filter updates with no type or class, they are mostly position updates and we don't care about them
-        // TODO: un-flatten the frames?
         val actorUpdates = parsedReplay.frames
             .flatMap { it.actorUpdates }
             .filter { it.demolition != null || (it.typeName != null && it.className != null) }
@@ -71,11 +70,9 @@ class ReplayTransformer {
 
         // Map car body actor ids to players
         actorCarBodies.forEach { actorId, bodyIds ->
-            run {
-                players
-                    .filter { it.value.id == actorId }
-                    .onEach { it.value.actorIds.addAll(bodyIds) }
-            }
+            players
+                .filter { it.value.id == actorId }
+                .onEach { it.value.actorIds.addAll(bodyIds) }
         }
 
         for (update in actorUpdates) {
@@ -87,7 +84,6 @@ class ReplayTransformer {
                         player.cameraSettings = update.cameraSettings
                     }
                 }
-                //else -> println(update)
             }
         }
         return parsedReplay.toReplay(replayName, teams, demolitions)
@@ -99,7 +95,7 @@ class ReplayTransformer {
         }
 
         fun CarBodies.addBody(actorId: Int, bodyId: Int) {
-            val list = getOrPut(actorId, { mutableListOf() })
+            val list = getOrPut(actorId) { mutableListOf() }
             list.add(bodyId)
         }
 

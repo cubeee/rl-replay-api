@@ -5,6 +5,6 @@ import java.io.InputStream
 
 interface ReplayParser {
 
-    fun parseReplay(name: String, content: InputStream): ParseResult
+    fun parseReplay(name: String, content: InputStream?): ParseResult
 
 }

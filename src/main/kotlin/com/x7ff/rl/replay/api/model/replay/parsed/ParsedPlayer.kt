@@ -13,7 +13,7 @@ data class ParsedPlayer(
     val shots: Int,
     var cameraSettings: ParsedReplayCameraSettings,
     var steeringSensitivity: Float,
-    val actorIds: MutableList<Int>
+    val actorIds: MutableSet<Int>
 ) {
     fun toPlayer(): Player {
         return Player(

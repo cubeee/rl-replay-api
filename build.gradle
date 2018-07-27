@@ -30,6 +30,7 @@ dependencies {
     compile group: "io.javalin", name: "javalin", version: javalinVersion
     compile group: "org.slf4j", name: "slf4j-simple", version: slf4jVersion
     compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
+
     compile group: "com.squareup.moshi", name: "moshi", version: moshiVersion
     compile group: "com.squareup.moshi", name: "moshi-kotlin", version: moshiVersion
 }
