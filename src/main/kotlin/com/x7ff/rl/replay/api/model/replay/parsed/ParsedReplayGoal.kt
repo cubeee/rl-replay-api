@@ -1,9 +1,9 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayGoal(
-    @Json(name = "Time") val time: Double,
-    @Json(name = "PlayerName") val player: String,
-    @Json(name = "PlayerTeam") val team: Int
+    @JsonProperty("Time") val time: Double,
+    @JsonProperty("PlayerName") val player: String,
+    @JsonProperty("PlayerTeam") val team: Int
 )

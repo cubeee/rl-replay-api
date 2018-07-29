@@ -1,7 +1,7 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayActorInfo(
-    @Json(name = "ActorId") val actorId: Int
+    @JsonProperty("ActorId") val actorId: Int
 )

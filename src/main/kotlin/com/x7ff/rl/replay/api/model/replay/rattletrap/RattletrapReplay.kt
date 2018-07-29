@@ -1,6 +1,6 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.x7ff.rl.replay.api.model.replay.Replay
 import com.x7ff.rl.replay.api.model.replay.parsed.ParsedReplayDemolition
 import com.x7ff.rl.replay.api.model.replay.parsed.ParsedTeam
@@ -36,8 +36,8 @@ import com.x7ff.rl.replay.api.model.replay.parsed.ParsedTeam
  *             - name: String
  */
 data class RattletrapReplay (
-    @Json(name = "header") val header: Header,
-    @Json(name = "content") val content: Content
+    @JsonProperty("header") val header: Header,
+    @JsonProperty("content") val content: Content
 ) {
     fun toReplay(
         name: String,

@@ -107,18 +107,16 @@ class RattletrapReplayTransformer {
                     playerCarIds[playerActorId] = actorId
                     carPlayerIds[actorId] = playerActorId
 
-                    if (actorData.hasValueKey("TAGame.Car_TA:ReplicatedDemolish")) {
-                        val demolition = values["TAGame.Car_TA:ReplicatedDemolish"]
-                        if (demolition is Demolition) {
-                            val attackerCarId = demolition.attackerActorId
-                            val victimCarId = demolition.victimActorId
+                    val demolition = values["TAGame.Car_TA:ReplicatedDemolish"]
+                    if (demolition is Demolition) {
+                        val attackerCarId = demolition.attackerActorId
+                        val victimCarId = demolition.victimActorId
 
-                            if (attackerCarId != -1 && victimCarId != -1) {
-                                val attackerPlayerId = carPlayerIds[attackerCarId] ?: -1
-                                val victimPlayerId = carPlayerIds[victimCarId] ?: -1
+                        if (attackerCarId != -1 && victimCarId != -1) {
+                            val attackerPlayerId = carPlayerIds[attackerCarId] ?: -1
+                            val victimPlayerId = carPlayerIds[victimCarId] ?: -1
 
-                                demolitions.add(ParsedReplayDemolition(attackerPlayerId, victimPlayerId))
-                            }
+                            demolitions.add(ParsedReplayDemolition(attackerPlayerId, victimPlayerId))
                         }
                     }
                 }

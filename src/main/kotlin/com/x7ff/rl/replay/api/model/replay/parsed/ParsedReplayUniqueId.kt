@@ -1,11 +1,11 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayUniqueId(
-    @Json(name = "SteamID64") val steamId: Long,
-    @Json(name = "SteamProfileUrl") val steamProfileUrl: String,
-    @Json(name = "Type") val type: Int,
-    @Json(name = "Id") val id: String,
-    @Json(name = "PlayerNumber") val playerNumber: Int
+    @JsonProperty("SteamID64") val steamId: Long,
+    @JsonProperty("SteamProfileUrl") val steamProfileUrl: String,
+    @JsonProperty("Type") val type: Int,
+    @JsonProperty("Id") val id: String,
+    @JsonProperty("PlayerNumber") val playerNumber: Int
 )

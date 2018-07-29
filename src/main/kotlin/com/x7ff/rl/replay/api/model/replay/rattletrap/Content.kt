@@ -1,7 +1,7 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Content (
-    @Json(name = "body") val body: ContentBody
+    @JsonProperty("body") val body: ContentBody
 )

@@ -1,8 +1,8 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Replication (
-    @Json(name = "actor_id") val actorId: ReplicationActorId,
-    @Json(name = "value") val actor: ReplicationActor
+    @JsonProperty("actor_id") val actorId: ReplicationActorId,
+    @JsonProperty("value") val actor: ReplicationActor
 )

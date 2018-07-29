@@ -1,20 +1,26 @@
 package com.x7ff.rl.replay.api.parser
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.x7ff.rl.replay.api.adapter.ActorUpdateDeserializer
 import com.x7ff.rl.replay.api.model.parse.FailedParseResponse
 import com.x7ff.rl.replay.api.model.parse.ParseResult
 import com.x7ff.rl.replay.api.model.parse.SuccessfulParseResponse
 import com.x7ff.rl.replay.api.model.replay.parsed.ParsedReplay
+import com.x7ff.rl.replay.api.model.replay.rattletrap.ActorUpdate
 import java.io.File
 import java.io.InputStream
 
 class LocalFileReplayParser : ReplayParser {
 
-    private val moshi by lazy {
-        Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+    private val objectMapper by lazy {
+        val module = SimpleModule()
+        module.addDeserializer(ActorUpdate::class.java, ActorUpdateDeserializer())
+
+        ObjectMapper()
+            .registerModule(module)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     override fun parseReplay(name: String, content: InputStream?): ParseResult {
@@ -24,9 +30,7 @@ class LocalFileReplayParser : ReplayParser {
         resource?.let {
             val fileContent = resource.readText()
 
-            val parsedReplayAdapter = moshi.adapter(ParsedReplay::class.java)
-            val parsedReplay = parsedReplayAdapter.fromJson(fileContent)
-
+            val parsedReplay = objectMapper.readValue(fileContent, ParsedReplay::class.java)
             parsedReplay?.let {
                 return SuccessfulParseResponse(parsedReplay)
             }

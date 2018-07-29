@@ -1,12 +1,12 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ActorSpawn (
-    @Json(name = "class_name") val className: String,
-    @Json(name = "flag") val flag: Boolean,
-    @Json(name = "name") val name: String,
-    @Json(name = "name_index") val nameIndex: Int,
-    @Json(name = "object_id") val objectId: Int,
-    @Json(name = "object_name") val objectName: String
+    @JsonProperty("class_name") val className: String,
+    @JsonProperty("flag") val flag: Boolean,
+    @JsonProperty("name") val name: String,
+    @JsonProperty("name_index") val nameIndex: Int,
+    @JsonProperty("object_id") val objectId: Int,
+    @JsonProperty("object_name") val objectName: String
 )

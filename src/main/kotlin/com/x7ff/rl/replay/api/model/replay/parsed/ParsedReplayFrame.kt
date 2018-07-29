@@ -1,8 +1,8 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayFrame(
-    @Json(name = "Time") val time: Double,
-    @Json(name = "ActorUpdates") val actorUpdates: List<ParsedReplayFrameActorUpdate>
+    @JsonProperty("Time") val time: Double,
+    @JsonProperty("ActorUpdates") val actorUpdates: List<ParsedReplayFrameActorUpdate>
 )

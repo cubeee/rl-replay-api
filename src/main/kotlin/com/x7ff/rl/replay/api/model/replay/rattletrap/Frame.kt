@@ -1,8 +1,8 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Frame (
-    @Json(name = "delta") val delta: Float,
-    @Json(name = "replications") val replications: List<Replication>
+    @JsonProperty("delta") val delta: Float,
+    @JsonProperty("replications") val replications: List<Replication>
 )

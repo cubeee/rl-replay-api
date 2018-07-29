@@ -1,16 +1,16 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.x7ff.rl.replay.api.model.replay.CameraSettings
 
 data class ParsedReplayCameraSettings(
-    @Json(name = "FieldOfView") private val fieldOfView: Int,
-    @Json(name = "Height") private val height: Int,
-    @Json(name = "Pitch") private val pitch: Int,
-    @Json(name = "Distance") private val distance: Int,
-    @Json(name = "Stiffness") private val stiffness: Float,
-    @Json(name = "SwivelSpeed") private val swivelSpeed: Float,
-    @Json(name = "TransitionSpeed") private val transitionSpeed: Float
+    @JsonProperty("FieldOfView") private val fieldOfView: Int,
+    @JsonProperty("Height") private val height: Int,
+    @JsonProperty("Pitch") private val pitch: Int,
+    @JsonProperty("Distance") private val distance: Int,
+    @JsonProperty("Stiffness") private val stiffness: Float,
+    @JsonProperty("SwivelSpeed") private val swivelSpeed: Float,
+    @JsonProperty("TransitionSpeed") private val transitionSpeed: Float
 ) {
     fun toCameraSettings(): CameraSettings {
         return CameraSettings(

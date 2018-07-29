@@ -1,7 +1,7 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ProfileSettings (
-    @Json(name = "cam_settings") val cameraSettings: CameraSettings
+    @JsonProperty("cam_settings") val cameraSettings: CameraSettings
 )

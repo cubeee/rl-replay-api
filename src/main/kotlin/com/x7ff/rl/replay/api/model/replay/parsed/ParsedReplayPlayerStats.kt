@@ -1,15 +1,15 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayPlayerStats(
-    @Json(name = "Name") val name: String,
-    @Json(name = "Platform") val platform: ParsedReplayPlatform,
-    @Json(name = "OnlineID") val onlineId: String,
-    @Json(name = "Team") val team: Int,
-    @Json(name = "Score") val score: Int,
-    @Json(name = "Goals") val goals: Int,
-    @Json(name = "Assists") val assists: Int,
-    @Json(name = "Saves") val saves: Int,
-    @Json(name = "Shots") val shots: Int
+    @JsonProperty("Name") val name: String,
+    @JsonProperty("Platform") val platform: ParsedReplayPlatform,
+    @JsonProperty("OnlineID") val onlineId: String,
+    @JsonProperty("Team") val team: Int,
+    @JsonProperty("Score") val score: Int,
+    @JsonProperty("Goals") val goals: Int,
+    @JsonProperty("Assists") val assists: Int,
+    @JsonProperty("Saves") val saves: Int,
+    @JsonProperty("Shots") val shots: Int
 )

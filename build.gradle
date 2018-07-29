@@ -4,7 +4,6 @@ buildscript {
         javalinVersion = '1.7.0'
         slf4jVersion = '1.7.25'
         jacksonVersion = '2.9.5'
-        moshiVersion = '1.6.0'
     }
 
     repositories {
@@ -29,10 +28,9 @@ dependencies {
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: kotlinVersion
     compile group: "io.javalin", name: "javalin", version: javalinVersion
     compile group: "org.slf4j", name: "slf4j-simple", version: slf4jVersion
-    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
 
-    compile group: "com.squareup.moshi", name: "moshi", version: moshiVersion
-    compile group: "com.squareup.moshi", name: "moshi-kotlin", version: moshiVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
+    compile group: "com.fasterxml.jackson.module", name: "jackson-module-kotlin", version: jacksonVersion
 }
 
 compileKotlin {

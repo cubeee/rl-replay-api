@@ -1,14 +1,16 @@
 package com.x7ff.rl.replay.api
 
-import com.squareup.moshi.Moshi
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.x7ff.rl.replay.api.model.parse.SuccessfulRattletrapParseResponse
-import com.x7ff.rl.replay.api.model.replay.Replay
 import com.x7ff.rl.replay.api.parser.LocalFileRattletrapParser
 import com.x7ff.rl.replay.api.transformer.RattletrapReplayTransformer
 
-private val moshi by lazy {
-    Moshi.Builder()
-        .build()
+private val objectMapper by lazy {
+    ObjectMapper()
+        .enable(SerializationFeature.INDENT_OUTPUT)
+        .registerKotlinModule()
 }
 
 fun main(args: Array<String>) {
@@ -24,12 +26,8 @@ fun main(args: Array<String>) {
     if (parseResult is SuccessfulRattletrapParseResponse) {
         val transformed = rattletrapTransformer.transform(parseResult.replay)
 
-        val replayAdapter = moshi
-            .adapter(Replay::class.java)
-            .indent("  ")
-            .lenient()
         println()
-        println(replayAdapter.toJson(transformed))
+        println(objectMapper.writeValueAsString(transformed))
     } else {
         println("transform failed")
     }

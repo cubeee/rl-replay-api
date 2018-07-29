@@ -1,8 +1,8 @@
 package com.x7ff.rl.replay.api.model.replay.parsed
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ParsedReplayPlatform(
-    @Json(name = "Type") val type: String,
-    @Json(name = "Value") val value: String
+    @JsonProperty("Type") val type: String,
+    @JsonProperty("Value") val value: String
 )

@@ -1,11 +1,11 @@
 package com.x7ff.rl.replay.api.model.replay.rattletrap
 
-import com.squareup.moshi.Json
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class HeaderBody (
-    @Json(name = "engine_version") val engineVersion: Int,
-    @Json(name = "label") val label: String,
-    @Json(name = "licensee_version") val licenseeVersion: Int,
-    @Json(name = "patch_version") val patchVersion: Int,
-    @Json(name = "properties") val properties: Properties
+    @JsonProperty("engine_version") val engineVersion: Int,
+    @JsonProperty("label") val label: String,
+    @JsonProperty("licensee_version") val licenseeVersion: Int,
+    @JsonProperty("patch_version") val patchVersion: Int,
+    @JsonProperty("properties") val properties: Properties
 )

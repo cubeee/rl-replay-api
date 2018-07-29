@@ -66,7 +66,7 @@ class WebServer {
 
                     if (parseResult is SuccessfulRattletrapParseResponse) {
                         val transformed = rattletrapTransformer.transform(parseResult.replay)
-                        //ctx.json(transformed)
+                        ctx.json(transformed)
                     } else {
                         ctx
                             .status(HttpServletResponse.SC_BAD_REQUEST)
