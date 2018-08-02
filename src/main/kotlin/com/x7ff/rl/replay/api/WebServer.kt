@@ -1,16 +1,13 @@
 package com.x7ff.rl.replay.api
 
 import com.x7ff.rl.replay.api.model.ErrorResponse
-import com.x7ff.rl.replay.api.model.parse.SuccessfulParseResponse
 import com.x7ff.rl.replay.api.model.parse.SuccessfulRattletrapParseResponse
-import com.x7ff.rl.replay.api.parser.LocalFileRattletrapParser
-import com.x7ff.rl.replay.api.parser.LocalFileReplayParser
+import com.x7ff.rl.replay.api.parser.RattletrapParser
 import com.x7ff.rl.replay.api.transformer.RattletrapReplayTransformer
-import com.x7ff.rl.replay.api.transformer.ReplayTransformer
 import io.javalin.Javalin
-import java.io.InputStream
 import javax.servlet.http.HttpServletResponse
-import kotlin.system.measureTimeMillis
+
+data class ParserContext(val rattletrapExecutable: String, val parserBufferSize: Int)
 
 class WebServer {
     companion object {
@@ -19,61 +16,35 @@ class WebServer {
         private const val REPLAY_EXTENSION = ".replay"
     }
 
-    fun start(port: Int) {
-        val parser = LocalFileReplayParser()
-        val transformer = ReplayTransformer()
-
-        val rattletrapParser = LocalFileRattletrapParser()
-        val rattletrapTransformer = RattletrapReplayTransformer()
-
+    fun start(port: Int, parserContext: ParserContext) {
         val app = Javalin.start(port)
         app.post(REPLAY_UPLOAD_PATH) { ctx ->
-            val replayFile = ctx.uploadedFile(REQUEST_FILE_NAME)
+            val uploadedFile = ctx.uploadedFile(REQUEST_FILE_NAME)
 
-            replayFile?.let { file ->
-                if (file.extension != REPLAY_EXTENSION) {
-                    ctx.json(ErrorResponse("Invalid file extension '${file.extension}', expected $REPLAY_EXTENSION"))
-                    return@let
+            uploadedFile?.let {
+                if (uploadedFile.extension != REPLAY_EXTENSION) {
+                    ctx
+                        .status(HttpServletResponse.SC_BAD_REQUEST)
+                        .json(ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension"))
+                        .next()
+                    return@post
                 }
 
-                val parseResult = parser.parseReplay(file.name, file.content)
+                val rattletrapParser = RattletrapParser(parserContext)
+                val rattletrapTransformer = RattletrapReplayTransformer()
 
-                if (parseResult is SuccessfulParseResponse) {
-                    ctx.json(transformer.transform(parseResult.replay))
+                val parseResult = rattletrapParser.parseReplay(uploadedFile.content)
+
+                if (parseResult is SuccessfulRattletrapParseResponse) {
+                    val transformed = rattletrapTransformer.transform(parseResult.replay)
+                    ctx.json(transformed)
+                        .next()
                 } else {
                     ctx
                         .status(HttpServletResponse.SC_BAD_REQUEST)
                         .json(parseResult)
+                        .next()
                 }
-            } ?: run {
-                ctx
-                    .status(HttpServletResponse.SC_BAD_REQUEST)
-                    .json(ErrorResponse("No replay file found"))
-            }
-        }
-
-        app.post("/rattletrap") { ctx ->
-            val file = ctx.formParam("file")
-            val content = object : InputStream() {
-                override fun read(): Int {
-                    return -1
-                }
-            }
-
-            file?.let {
-                val elapsed = measureTimeMillis {
-                    val parseResult = rattletrapParser.parseReplay(file, content)
-
-                    if (parseResult is SuccessfulRattletrapParseResponse) {
-                        val transformed = rattletrapTransformer.transform(parseResult.replay)
-                        ctx.json(transformed)
-                    } else {
-                        ctx
-                            .status(HttpServletResponse.SC_BAD_REQUEST)
-                            .json(parseResult)
-                    }
-                }
-                println("Replay parsed and transformed in ${elapsed}ms")
             } ?: run {
                 ctx
                     .status(HttpServletResponse.SC_BAD_REQUEST)
@@ -85,6 +56,21 @@ class WebServer {
 }
 
 fun main(args: Array<String>) {
+    val port = getEnvVar("PORT", "7000").toInt()
+
+    val parserContext = ParserContext(
+        rattletrapExecutable = getRequiredEnvVar("RATTLETRAP_EXECUTABLE"),
+        parserBufferSize = getEnvVar("PARSER_BUFFER_SIZE", "100000").toInt()
+    )
+
     val webServer = WebServer()
-    webServer.start(7000) // TODO: env var
+    webServer.start(port, parserContext)
+}
+
+private fun getRequiredEnvVar(key: String): String {
+    return System.getenv(key) ?: throw NullPointerException("Environment variable '$key' not set")
+}
+
+private fun getEnvVar(key: String, default: String): String {
+    return System.getenv(key) ?: default
 }

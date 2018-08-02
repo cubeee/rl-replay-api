@@ -10,14 +10,18 @@ import com.x7ff.rl.replay.api.model.replay.rattletrap.ProfileSettings
 import com.x7ff.rl.replay.api.model.replay.rattletrap.Properties
 import com.x7ff.rl.replay.api.model.replay.rattletrap.RattletrapReplay
 
-data class ActorInfo(val typeName: String, val className: String, val name: String, val id: Int, val values: MutableMap<String, Any?>) {
-    fun hasValueKey(key: String) = values.any { entry -> entry.key == key }
-}
+data class ActorInfo(
+    val typeName: String,
+    val className: String,
+    val name: String,
+    val id: Int,
+    val values: MutableMap<String, Any?>
+)
 
 class RattletrapReplayTransformer {
 
     fun transform(parsedReplay: RattletrapReplay): Replay {
-        val teams = listOf(ParsedTeam.Blue, ParsedTeam.Red)
+        val teams = ParsedTeam.createTeams()
         val players = mutableMapOf<String, ParsedPlayer>()
         val demolitions = mutableSetOf<ParsedReplayDemolition>()
 

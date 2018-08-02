@@ -2,13 +2,17 @@ package com.x7ff.rl.replay.api.model.replay.parsed
 
 import com.x7ff.rl.replay.api.model.replay.Team
 
-sealed class ParsedTeam(
+data class ParsedTeam(
     val id: Int,
     val name: String,
-    val players: MutableList<ParsedPlayer> = mutableListOf()
+    val players: MutableSet<ParsedPlayer> = mutableSetOf()
 ) {
-    object Blue: ParsedTeam(0, "Blue")
-    object Red: ParsedTeam(1, "Red")
+    companion object {
+        private fun blueTeam() = ParsedTeam(0, "Blue")
+        private fun redTeam() = ParsedTeam(1, "Red")
+
+        fun createTeams() = listOf(blueTeam(), redTeam())
+    }
 
     fun toTeam(): Team {
         val players = players.map {
