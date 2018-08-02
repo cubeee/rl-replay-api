@@ -1,7 +1,7 @@
 package com.x7ff.rl.replay.api
 
-import com.x7ff.rl.replay.api.model.ErrorResponse
-import com.x7ff.rl.replay.api.model.parse.SuccessfulRattletrapParseResponse
+import com.x7ff.rl.replay.api.model.response.ErrorResponse
+import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
 import com.x7ff.rl.replay.api.parser.RattletrapParser
 import com.x7ff.rl.replay.api.transformer.RattletrapReplayTransformer
 import io.javalin.Javalin
@@ -33,17 +33,14 @@ class WebServer {
                 val rattletrapParser = RattletrapParser(parserContext)
                 val rattletrapTransformer = RattletrapReplayTransformer()
 
-                val parseResult = rattletrapParser.parseReplay(uploadedFile.content)
-
-                if (parseResult is SuccessfulRattletrapParseResponse) {
-                    val transformed = rattletrapTransformer.transform(parseResult.replay)
+                val parseResponse = rattletrapParser.parseReplay(uploadedFile.content)
+                if (parseResponse is SuccessfulParseResponse) {
+                    val transformed = rattletrapTransformer.transform(parseResponse.replay)
                     ctx.json(transformed)
-                        .next()
                 } else {
                     ctx
                         .status(HttpServletResponse.SC_BAD_REQUEST)
-                        .json(parseResult)
-                        .next()
+                        .json(parseResponse)
                 }
             } ?: run {
                 ctx
@@ -64,6 +61,7 @@ fun main(args: Array<String>) {
     )
 
     val webServer = WebServer()
+    println("Listening on port $port...")
     webServer.start(port, parserContext)
 }
 

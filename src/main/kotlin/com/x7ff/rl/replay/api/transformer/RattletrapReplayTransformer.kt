@@ -1,14 +1,7 @@
 package com.x7ff.rl.replay.api.transformer
 
 import com.x7ff.rl.replay.api.model.replay.Replay
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedPlayer
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedReplayCameraSettings
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedReplayDemolition
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedTeam
-import com.x7ff.rl.replay.api.model.replay.rattletrap.Demolition
-import com.x7ff.rl.replay.api.model.replay.rattletrap.ProfileSettings
-import com.x7ff.rl.replay.api.model.replay.rattletrap.Properties
-import com.x7ff.rl.replay.api.model.replay.rattletrap.RattletrapReplay
+import com.x7ff.rl.replay.api.model.replay.rattletrap.*
 
 data class ActorInfo(
     val typeName: String,
@@ -21,9 +14,9 @@ data class ActorInfo(
 class RattletrapReplayTransformer {
 
     fun transform(parsedReplay: RattletrapReplay): Replay {
-        val teams = ParsedTeam.createTeams()
-        val players = mutableMapOf<String, ParsedPlayer>()
-        val demolitions = mutableSetOf<ParsedReplayDemolition>()
+        val teams = RattletrapTeam.createTeams()
+        val players = mutableMapOf<String, RattletrapPlayer>()
+        val demolitions = mutableSetOf<RattletrapDemolition>()
 
         val actorIds = mutableListOf<Int>()
         val actors = mutableMapOf<Int, ActorInfo>()
@@ -36,7 +29,7 @@ class RattletrapReplayTransformer {
         playerStats
             .map { statProperty -> statProperty.values }
             .onEach { stats ->
-                val player = ParsedPlayer(
+                val player = RattletrapPlayer(
                     id = -1,
                     name = stats["Name"] as String,
                     onlineId = (stats["OnlineID"] as Long).toString(),
@@ -45,7 +38,7 @@ class RattletrapReplayTransformer {
                     assists = stats["Assists"] as Int,
                     saves = stats["Saves"] as Int,
                     shots = stats["Shots"] as Int,
-                    cameraSettings = ParsedReplayCameraSettings.Default,
+                    cameraSettings = RattletrapCameraSettings.Default,
                     steeringSensitivity = 1.0f,
                     actorIds = mutableSetOf()
                 )
@@ -120,7 +113,12 @@ class RattletrapReplayTransformer {
                             val attackerPlayerId = carPlayerIds[attackerCarId] ?: -1
                             val victimPlayerId = carPlayerIds[victimCarId] ?: -1
 
-                            demolitions.add(ParsedReplayDemolition(attackerPlayerId, victimPlayerId))
+                            demolitions.add(
+                                RattletrapDemolition(
+                                    attackerPlayerId,
+                                    victimPlayerId
+                                )
+                            )
                         }
                     }
                 }
@@ -134,17 +132,7 @@ class RattletrapReplayTransformer {
                     val playerId = updates.firstOrNull { it.name == "TAGame.CameraSettingsActor_TA:PRI" }?.value
                     if (playerId is Int) {
                         val player = players.values.firstOrNull { p -> p.id == playerId }
-                        with(profileSettings.cameraSettings) {
-                            player?.cameraSettings = ParsedReplayCameraSettings(
-                                fieldOfView = this.fov,
-                                height = this.height,
-                                pitch = this.angle,
-                                distance = this.distance,
-                                stiffness = this.stiffness,
-                                swivelSpeed = this.swivelSpeed,
-                                transitionSpeed = this.transitionSpeed
-                            )
-                        }
+                        player?.cameraSettings = profileSettings.cameraSettings
                     }
                 }
             }
@@ -152,8 +140,8 @@ class RattletrapReplayTransformer {
 
         return parsedReplay.toReplay(
             name = properties.values["ReplayName"]?.toString() ?: "N/A",
-            parsedTeams = teams,
-            parsedDemolitions = demolitions.toMutableList()
+            rattletrapTeams = teams,
+            rattletrapDemolitions = demolitions.toMutableList()
         )
     }
 

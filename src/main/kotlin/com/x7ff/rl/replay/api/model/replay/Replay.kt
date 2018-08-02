@@ -1,7 +1,9 @@
 package com.x7ff.rl.replay.api.model.replay
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 data class Replay(
-    val name: String?,
-    val teams: List<Team>,
-    val demolitions: List<Demolition>
+    @JsonProperty("name") val name: String?,
+    @JsonProperty("teams") val teams: List<Team>,
+    @JsonProperty("demolitions") val demolitions: List<Demolition>
 )

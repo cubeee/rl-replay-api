@@ -2,8 +2,6 @@ package com.x7ff.rl.replay.api.model.replay.rattletrap
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.x7ff.rl.replay.api.model.replay.Replay
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedReplayDemolition
-import com.x7ff.rl.replay.api.model.replay.parsed.ParsedTeam
 
 /**
  * Hierarchy:
@@ -41,12 +39,12 @@ data class RattletrapReplay (
 ) {
     fun toReplay(
         name: String,
-        parsedTeams: List<ParsedTeam>,
-        parsedDemolitions: MutableList<ParsedReplayDemolition>
+        rattletrapTeams: List<RattletrapTeam>,
+        rattletrapDemolitions: MutableList<RattletrapDemolition>
     ): Replay {
-        val teams = parsedTeams.map { it.toTeam() }
-        val parsedPlayers = parsedTeams.flatMap { it.players }
-        val demolitions = parsedDemolitions.mapNotNull { it.toDemolition(parsedPlayers) }
+        val teams = rattletrapTeams.map { it.toTeam() }
+        val players = rattletrapTeams.flatMap { it.players }
+        val demolitions = rattletrapDemolitions.mapNotNull { it.toDemolition(players) }
 
         return Replay(
             name = name,

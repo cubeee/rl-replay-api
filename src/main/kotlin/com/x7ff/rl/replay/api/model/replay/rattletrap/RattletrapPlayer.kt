@@ -1,8 +1,8 @@
-package com.x7ff.rl.replay.api.model.replay.parsed
+package com.x7ff.rl.replay.api.model.replay.rattletrap
 
 import com.x7ff.rl.replay.api.model.replay.Player
 
-data class ParsedPlayer(
+data class RattletrapPlayer(
     var id: Int,
     val name: String,
     val onlineId: String,
@@ -11,7 +11,7 @@ data class ParsedPlayer(
     val assists: Int,
     val saves: Int,
     val shots: Int,
-    var cameraSettings: ParsedReplayCameraSettings,
+    var cameraSettings: RattletrapCameraSettings,
     var steeringSensitivity: Float,
     val actorIds: MutableSet<Int>
 ) {

@@ -1,14 +1,16 @@
 package com.x7ff.rl.replay.api.model.replay
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 data class Player(
-    var id: Int,
-    val name: String,
-    val onlineId: String,
-    val score: Int,
-    val goals: Int,
-    val assists: Int,
-    val saves: Int,
-    val shots: Int,
-    var cameraSettings: CameraSettings,
-    var steeringSensitivity: Float
+    @JsonProperty("id") val id: Int,
+    @JsonProperty("name") val name: String,
+    @JsonProperty("online_id") val onlineId: String,
+    @JsonProperty("score") val score: Int,
+    @JsonProperty("goals") val goals: Int,
+    @JsonProperty("assists") val assists: Int,
+    @JsonProperty("saves") val saves: Int,
+    @JsonProperty("shots") val shots: Int,
+    @JsonProperty("camera_settings") val cameraSettings: CameraSettings,
+    @JsonProperty("steering_sensitivity") val steeringSensitivity: Float
 )
