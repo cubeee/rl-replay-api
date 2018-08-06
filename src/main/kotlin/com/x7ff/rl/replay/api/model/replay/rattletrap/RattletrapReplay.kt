@@ -39,6 +39,7 @@ data class RattletrapReplay (
 ) {
     fun toReplay(
         name: String,
+        id: String,
         rattletrapTeams: List<RattletrapTeam>,
         rattletrapDemolitions: MutableList<RattletrapDemolition>
     ): Replay {
@@ -48,6 +49,7 @@ data class RattletrapReplay (
 
         return Replay(
             name = name,
+            id = id,
             teams = teams,
             demolitions = demolitions
         )

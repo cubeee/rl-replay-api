@@ -143,6 +143,7 @@ class RattletrapReplayTransformer {
 
         return parsedReplay.toReplay(
             name = properties.values["ReplayName"]?.toString() ?: "N/A",
+            id = properties.values["Id"]?.toString() ?: "N/A",
             rattletrapTeams = teams,
             rattletrapDemolitions = demolitions.toMutableList()
         )
