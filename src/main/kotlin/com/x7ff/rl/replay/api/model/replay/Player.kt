@@ -3,7 +3,7 @@ package com.x7ff.rl.replay.api.model.replay
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Player(
-    @JsonProperty("id") val id: Int,
+    @JsonProperty("id") val id: Long,
     @JsonProperty("name") val name: String,
     @JsonProperty("online_id") val onlineId: String,
     @JsonProperty("score") val score: Int,

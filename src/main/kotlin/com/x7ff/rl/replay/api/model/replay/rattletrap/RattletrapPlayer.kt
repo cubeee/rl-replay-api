@@ -3,7 +3,7 @@ package com.x7ff.rl.replay.api.model.replay.rattletrap
 import com.x7ff.rl.replay.api.model.replay.Player
 
 data class RattletrapPlayer(
-    var id: Int,
+    var id: Long,
     val name: String,
     val onlineId: String,
     val score: Int,

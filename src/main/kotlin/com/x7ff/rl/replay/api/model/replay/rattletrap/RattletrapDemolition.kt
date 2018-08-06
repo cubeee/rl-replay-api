@@ -4,8 +4,8 @@ import com.x7ff.rl.replay.api.model.replay.Demolition
 import com.x7ff.rl.replay.api.model.replay.DemolitionPlayer
 
 data class RattletrapDemolition(
-    private val attackerActorId: Int,
-    private val victimActorId: Int
+    private val attackerActorId: Long,
+    private val victimActorId: Long
 ) {
     fun toDemolition(players: List<RattletrapPlayer>): Demolition? {
         val attacker = findPlayerByActorId(players, attackerActorId)
@@ -20,7 +20,7 @@ data class RattletrapDemolition(
         )
     }
 
-    private fun findPlayerByActorId(players: List<RattletrapPlayer>, actorId: Int): RattletrapPlayer? {
+    private fun findPlayerByActorId(players: List<RattletrapPlayer>, actorId: Long): RattletrapPlayer? {
         return players.firstOrNull { player -> player.id == actorId }
     }
 

@@ -7,7 +7,7 @@ data class ActorInfo(
     val typeName: String,
     val className: String,
     val name: String,
-    val id: Int,
+    val id: Long,
     val values: MutableMap<String, Any?>
 )
 
@@ -18,10 +18,10 @@ class RattletrapReplayTransformer {
         val players = mutableMapOf<String, RattletrapPlayer>()
         val demolitions = mutableSetOf<RattletrapDemolition>()
 
-        val actorIds = mutableListOf<Int>()
-        val actors = mutableMapOf<Int, ActorInfo>()
-        val playerCarIds = mutableMapOf<Int, Int>()
-        val carPlayerIds = mutableMapOf<Int, Int>()
+        val actorIds = mutableListOf<Long>()
+        val actors = mutableMapOf<Long, ActorInfo>()
+        val playerCarIds = mutableMapOf<Long, Long>()
+        val carPlayerIds = mutableMapOf<Long, Long>()
 
         val properties = parsedReplay.header.body.properties
         val playerStats = properties.values["PlayerStats"] as List<Properties>
@@ -104,17 +104,18 @@ class RattletrapReplayTransformer {
                 }
 
                 if (actorData.typeName == "Archetypes.Car.Car_Default" && playerActorId is Int) {
-                    playerCarIds[playerActorId] = actorId
-                    carPlayerIds[actorId] = playerActorId
+                    playerCarIds[playerActorId.toLong()] = actorId
+                    carPlayerIds[actorId] = playerActorId.toLong()
 
                     val demolition = values["TAGame.Car_TA:ReplicatedDemolish"]
                     if (demolition is Demolition) {
+                        println(demolition)
                         val attackerCarId = demolition.attackerActorId
                         val victimCarId = demolition.victimActorId
 
-                        if (attackerCarId != -1 && victimCarId != -1) {
-                            val attackerPlayerId = carPlayerIds[attackerCarId] ?: -1
-                            val victimPlayerId = carPlayerIds[victimCarId] ?: -1
+                        if (attackerCarId != -1L && victimCarId != -1L) {
+                            val attackerPlayerId = carPlayerIds[attackerCarId] ?: -1L
+                            val victimPlayerId = carPlayerIds[victimCarId] ?: -1L
 
                             demolitions.add(
                                 RattletrapDemolition(
