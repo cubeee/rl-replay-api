@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.x7ff.rl.replay.api.ParserContext
 import com.x7ff.rl.replay.api.adapter.ActorUpdateDeserializer
+import com.x7ff.rl.replay.api.model.replay.rattletrap.ActorUpdate
+import com.x7ff.rl.replay.api.model.replay.rattletrap.RattletrapReplay
 import com.x7ff.rl.replay.api.model.response.FailedParseResponse
 import com.x7ff.rl.replay.api.model.response.ParseResponse
 import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
-import com.x7ff.rl.replay.api.model.replay.rattletrap.ActorUpdate
-import com.x7ff.rl.replay.api.model.replay.rattletrap.RattletrapReplay
 import java.io.InputStream
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class RattletrapParser(
     private val parserContext: ParserContext
@@ -23,6 +25,10 @@ class RattletrapParser(
         ObjectMapper()
             .registerModule(module)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    }
+
+    private val scheduler by lazy {
+        Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() + 1)
     }
 
     override fun parseReplay(content: InputStream?): ParseResponse {
@@ -51,6 +57,13 @@ class RattletrapParser(
             .redirectOutput(ProcessBuilder.Redirect.PIPE)
             .redirectInput(ProcessBuilder.Redirect.PIPE)
             .start()
+
+        scheduler.schedule({
+            if (proc.isAlive) {
+                proc.destroy()
+                println("Process timed out")
+            }
+        }, parserContext.parserTimeoutSeconds, TimeUnit.SECONDS)
 
         content.copyTo(proc.outputStream, parserContext.parserBufferSize)
         return proc.inputStream

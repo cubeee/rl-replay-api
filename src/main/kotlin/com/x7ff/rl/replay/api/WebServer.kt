@@ -8,7 +8,11 @@ import io.javalin.Javalin
 import io.javalin.embeddedserver.Location
 import javax.servlet.http.HttpServletResponse
 
-data class ParserContext(val rattletrapExecutable: String, val parserBufferSize: Int)
+data class ParserContext(
+    val rattletrapExecutable: String,
+    val parserBufferSize: Int,
+    val parserTimeoutSeconds: Long
+)
 
 class WebServer {
     companion object {
@@ -69,7 +73,8 @@ fun main(args: Array<String>) {
 
     val parserContext = ParserContext(
         rattletrapExecutable = getRequiredEnvVar("RATTLETRAP_EXECUTABLE"),
-        parserBufferSize = getEnvVar("PARSER_BUFFER_SIZE", "100000").toInt()
+        parserBufferSize = getEnvVar("PARSER_BUFFER_SIZE", "100000").toInt(),
+        parserTimeoutSeconds = getEnvVar("PARSER_TIMEOUT", "20").toLong()
     )
 
     val webServer = WebServer()
