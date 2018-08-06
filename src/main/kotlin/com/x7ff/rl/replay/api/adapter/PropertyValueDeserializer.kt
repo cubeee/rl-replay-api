@@ -16,20 +16,6 @@ class PropertyValueDeserializer {
     private val objectMapper = ObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    private val unmappedTypes = listOf(
-        "rigid_body_state",
-        "team_paint",
-        "reservation",
-        "party_leader",
-        "loadouts_online",
-        "loadouts",
-        "pickup", // TODO: map?
-        "location",
-        "enum",
-        "stat_event",
-        "extended_explosion"
-    )
-
     fun deserialize(node: JsonNode): PropertyValue? {
         val name = node.get("name")?.asText()
         val valueNode = node.get("value")
@@ -60,8 +46,7 @@ class PropertyValueDeserializer {
             }
             "demolish" -> objectMapper.readValue(value.toString(), object : TypeReference<Demolition>(){})
             "array" -> objectMapper.readValue(value.toString(), object : TypeReference<List<Properties>>(){})
-            in unmappedTypes -> null
-            else -> throw IOException("Invalid value type: $type")
+            else -> null
         }
     }
 
