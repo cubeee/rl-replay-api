@@ -5,6 +5,7 @@ import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
 import com.x7ff.rl.replay.api.parser.RattletrapParser
 import com.x7ff.rl.replay.api.transformer.RattletrapReplayTransformer
 import io.javalin.Javalin
+import io.javalin.embeddedserver.Location
 import javax.servlet.http.HttpServletResponse
 
 data class ParserContext(val rattletrapExecutable: String, val parserBufferSize: Int)
@@ -16,8 +17,17 @@ class WebServer {
         private const val REPLAY_EXTENSION = ".replay"
     }
 
-    fun start(port: Int, parserContext: ParserContext) {
-        val app = Javalin.start(port)
+    fun start(env: String, port: Int, parserContext: ParserContext) {
+        println("Starting in '$env' environment...")
+
+        val app = Javalin.create()
+        app.port(port)
+
+        when(env) {
+            "prod" -> app.enableStaticFiles("/public")
+            else -> app.enableStaticFiles("src/main/resources/public/", Location.EXTERNAL)
+        }
+
         app.post(REPLAY_UPLOAD_PATH) { ctx ->
             val uploadedFile = ctx.uploadedFile(REQUEST_FILE_NAME)
 
@@ -26,7 +36,6 @@ class WebServer {
                     ctx
                         .status(HttpServletResponse.SC_BAD_REQUEST)
                         .json(ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension"))
-                        .next()
                     return@post
                 }
 
@@ -48,11 +57,14 @@ class WebServer {
                     .json(ErrorResponse("No replay file name given"))
             }
         }
+
+        app.start()
     }
 
 }
 
 fun main(args: Array<String>) {
+    val env = getEnvVar("ENV", "dev")
     val port = getEnvVar("PORT", "7000").toInt()
 
     val parserContext = ParserContext(
@@ -62,7 +74,7 @@ fun main(args: Array<String>) {
 
     val webServer = WebServer()
     println("Listening on port $port...")
-    webServer.start(port, parserContext)
+    webServer.start(env, port, parserContext)
 }
 
 private fun getRequiredEnvVar(key: String): String {
