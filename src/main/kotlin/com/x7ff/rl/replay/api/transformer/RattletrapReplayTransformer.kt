@@ -26,6 +26,9 @@ class RattletrapReplayTransformer {
         val properties = parsedReplay.header.body.properties
         val playerStats = properties.values["PlayerStats"] as List<Properties>
 
+        teams[0].goals = properties.values["Team0Score"]?.toString()?.toInt() ?: 0
+        teams[1].goals = properties.values["Team1Score"]?.toString()?.toInt() ?: 0
+
         playerStats
             .map { statProperty -> statProperty.values }
             .onEach { stats ->

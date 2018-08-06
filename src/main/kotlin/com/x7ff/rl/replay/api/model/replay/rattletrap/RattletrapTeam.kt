@@ -5,6 +5,7 @@ import com.x7ff.rl.replay.api.model.replay.Team
 data class RattletrapTeam(
     val id: Int,
     val name: String,
+    var goals: Int = 0,
     val players: MutableSet<RattletrapPlayer> = mutableSetOf()
 ) {
     companion object {
@@ -24,6 +25,7 @@ data class RattletrapTeam(
         return Team(
             id = id,
             name = name,
+            goals = goals,
             players = players
         )
     }
