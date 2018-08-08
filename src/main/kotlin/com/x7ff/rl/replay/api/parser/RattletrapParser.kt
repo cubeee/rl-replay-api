@@ -31,20 +31,18 @@ class RattletrapParser(
         Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() + 1)
     }
 
-    override fun parseReplay(content: InputStream?): ParseResponse {
-        content?.let {
-            try {
-                val jsonStream = convertToJson(content)
-                val replay = objectMapper.readValue(jsonStream, RattletrapReplay::class.java)
+    override fun parseReplay(content: InputStream): ParseResponse {
+        try {
+            val jsonStream = convertToJson(content)
+            val replay = objectMapper.readValue(jsonStream, RattletrapReplay::class.java)
 
-                replay?.let {
-                    return SuccessfulParseResponse(replay)
-                }
-            } catch (e: Exception) {
-                // TODO: store failed replays and stacktraces
-                e.printStackTrace()
-                return FailedParseResponse("Failed to parse replay file")
+            replay?.let {
+                return SuccessfulParseResponse(replay)
             }
+        } catch (e: Exception) {
+            // TODO: store failed replays and stacktraces
+            e.printStackTrace()
+            return FailedParseResponse("Failed to parse replay file")
         }
         return FailedParseResponse("No replay file sent in request")
     }

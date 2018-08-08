@@ -11,9 +11,9 @@ data class ActorInfo(
     val values: MutableMap<String, Any?>
 )
 
-class RattletrapReplayTransformer {
+class RattletrapReplayTransformer: ReplayTransformer {
 
-    fun transform(parsedReplay: RattletrapReplay): Replay {
+    override fun transform(parsedReplay: RattletrapReplay): Replay {
         val teams = RattletrapTeam.createTeams()
         val players = mutableMapOf<String, RattletrapPlayer>()
         val demolitions = mutableSetOf<RattletrapDemolition>()
