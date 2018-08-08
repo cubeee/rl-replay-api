@@ -109,7 +109,6 @@ class RattletrapReplayTransformer {
 
                     val demolition = values["TAGame.Car_TA:ReplicatedDemolish"]
                     if (demolition is Demolition) {
-                        println(demolition)
                         val attackerCarId = demolition.attackerActorId
                         val victimCarId = demolition.victimActorId
 
@@ -135,7 +134,7 @@ class RattletrapReplayTransformer {
                 if (profileSettings is ProfileSettings) {
                     val playerId = updates.firstOrNull { it.name == "TAGame.CameraSettingsActor_TA:PRI" }?.value
                     if (playerId is Int) {
-                        val player = players.values.firstOrNull { p -> p.id == playerId }
+                        val player = players.values.firstOrNull { p -> p.id == playerId.toLong() }
                         player?.cameraSettings = profileSettings.cameraSettings
                     }
                 }
