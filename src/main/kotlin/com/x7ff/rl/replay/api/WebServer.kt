@@ -62,6 +62,7 @@ class WebServer {
             }
         }
 
+        println("Listening on port $port...")
         app.start()
     }
 
@@ -78,7 +79,6 @@ fun main(args: Array<String>) {
     )
 
     val webServer = WebServer()
-    println("Listening on port $port...")
     webServer.start(env, port, parserContext)
 }
 

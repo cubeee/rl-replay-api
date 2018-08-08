@@ -61,7 +61,6 @@ class RattletrapParser(
         scheduler.schedule({
             if (proc.isAlive) {
                 proc.destroy()
-                println("Process timed out")
             }
         }, parserContext.parserTimeoutSeconds, TimeUnit.SECONDS)
 

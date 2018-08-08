@@ -1,0 +1,45 @@
+#file-upload {
+    margin-bottom: 20px;
+}
+
+#replays {
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+#upload-form {
+    margin-bottom: 10px;
+}
+
+.upload-drop-zone {
+    line-height: 150px;
+    cursor: default;
+    color: #ccc;
+    border: 2px dashed #ccc;
+}
+
+.upload-drop-zone.drop {
+    color: #222;
+    border-color: #222;
+}
+
+.demolitions {
+    height: 150px;
+    overflow-y: scroll;
+}
+
+.blue-team {
+    color: #224CA7;
+}
+
+.orange-team {
+    color: #E36E2E;
+}
+
+.table-blue-team {
+    background-color: #224CA7;
+}
+
+.table-orange-team {
+    background-color: #E36E2E;
+}
