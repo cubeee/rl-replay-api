@@ -40,7 +40,6 @@ class RattletrapParser(
                 return SuccessfulParseResponse(replay)
             }
         } catch (e: Exception) {
-            // TODO: store failed replays and stacktraces
             e.printStackTrace()
             return FailedParseResponse("Failed to parse replay file")
         }
