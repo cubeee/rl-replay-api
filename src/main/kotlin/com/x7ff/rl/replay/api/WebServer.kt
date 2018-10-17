@@ -25,7 +25,7 @@ data class ParserContext(
 ) {
     companion object {
         const val DEFAULT_PARSER_BUFFER_SIZE = 100_000
-        const val DEFAULT_PARSER_TIMEOUT = 20
+        const val DEFAULT_PARSER_TIMEOUT = 40
         const val DEFAULT_SAVE_INCOMPATIBLE_REPLAYS = false
         const val DEFAULT_INCOMPATIBLE_REPLAYS_DIR = "incompatible_replays"
     }
