@@ -1,0 +1,4 @@
+build/
+out/
+incompatible_replays/
+**/resources/replays/*

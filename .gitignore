@@ -6,3 +6,4 @@ out/
 incompatible_replays/
 
 !.gitignore
+!.dockerignore

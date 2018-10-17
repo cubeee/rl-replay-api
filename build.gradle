@@ -33,6 +33,14 @@ dependencies {
     compile group: "com.fasterxml.jackson.module", name: "jackson-module-kotlin", version: jacksonVersion
 }
 
+jar {
+    archiveName = "rl-replay-api.jar"
+    manifest {
+        attributes 'Main-Class': 'com.x7ff.rl.replay.api.WebServerKt'
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
