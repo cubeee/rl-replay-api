@@ -1,15 +1,14 @@
 package com.x7ff.rl.replay.api
 
+import com.x7ff.parser.replay.Replay
 import com.x7ff.rl.replay.api.model.response.ErrorResponse
-import com.x7ff.rl.replay.api.model.response.ParseResponse
 import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
-import com.x7ff.rl.replay.api.parser.RattletrapParser
-import com.x7ff.rl.replay.api.parser.ReplayParser
-import com.x7ff.rl.replay.api.transformer.RattletrapReplayTransformer
-import com.x7ff.rl.replay.api.transformer.ReplayTransformer
+import com.x7ff.rl.replay.api.parser.ReplayKtParser
+import com.x7ff.rl.replay.api.transformer.MainReplayTransformer
+import io.javalin.Context
 import io.javalin.Javalin
+import io.javalin.UploadedFile
 import io.javalin.embeddedserver.Location
-import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -17,15 +16,10 @@ import java.util.zip.CRC32
 import javax.servlet.http.HttpServletResponse
 
 data class ParserContext(
-    val rattletrapExecutable: String,
-    val parserBufferSize: Int,
-    val parserTimeoutSeconds: Long,
     val saveIncompatibleReplays: Boolean,
     val incompatibleReplaysPath: String
 ) {
     companion object {
-        const val DEFAULT_PARSER_BUFFER_SIZE = 100_000
-        const val DEFAULT_PARSER_TIMEOUT = 40
         const val DEFAULT_SAVE_INCOMPATIBLE_REPLAYS = false
         const val DEFAULT_INCOMPATIBLE_REPLAYS_DIR = "incompatible_replays"
     }
@@ -33,22 +27,21 @@ data class ParserContext(
 
 class WebServer {
     companion object {
-        const val DEFAULT_ENV = "dev"
-        const val DEFAULT_PORT = 7000
-
         private const val REPLAY_UPLOAD_PATH = "/upload"
         private const val REQUEST_FILE_NAME = "replay"
         private const val REPLAY_EXTENSION = ".replay"
+
+        const val DEFAULT_ENV = "dev"
+        const val DEFAULT_PORT = 7000
+
+        private val invalidExtensionError = ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension")
     }
 
-    private lateinit var parser: ReplayParser
-    private lateinit var transformer: ReplayTransformer
+    private val parser = ReplayKtParser()
+    private val transformer = MainReplayTransformer()
 
     fun start(env: String, port: Int, parserContext: ParserContext) {
         println("Starting in '$env' environment...")
-
-        parser = RattletrapParser(parserContext)
-        transformer = RattletrapReplayTransformer()
 
         val app = Javalin.create()
         app.port(port)
@@ -60,29 +53,9 @@ class WebServer {
 
         app.post(REPLAY_UPLOAD_PATH) { ctx ->
             val uploadedFile = ctx.uploadedFile(REQUEST_FILE_NAME)
-
-            uploadedFile?.let {
-                if (uploadedFile.extension != REPLAY_EXTENSION) {
-                    ctx
-                        .status(HttpServletResponse.SC_BAD_REQUEST)
-                        .json(ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension"))
-                    return@post
-                }
-
-                uploadedFile.content.use { input ->
-                    val parseResponse = handleReplay(parserContext, input)
-
-                    if (parseResponse is SuccessfulParseResponse) {
-                        val transformed = transformer.transform(parseResponse.replay)
-                        ctx.json(transformed)
-                    } else {
-                        ctx
-                            .status(HttpServletResponse.SC_BAD_REQUEST)
-                            .json(parseResponse)
-                    }
-                }
-            } ?: run {
-                ctx
+            when (uploadedFile) {
+                is UploadedFile -> handleUpload(ctx, uploadedFile, parserContext)
+                else -> ctx
                     .status(HttpServletResponse.SC_BAD_REQUEST)
                     .json(ErrorResponse("No replay file name given"))
             }
@@ -92,14 +65,25 @@ class WebServer {
         app.start()
     }
 
-    private fun handleReplay(parserContext: ParserContext, replayInput: InputStream): ParseResponse {
-        val bytes = replayInput.readBytes()
-
-        val parseResponse = parser.parseReplay(ByteArrayInputStream(bytes))
-        if (parseResponse !is SuccessfulParseResponse && parserContext.saveIncompatibleReplays) {
-            saveReplay(parserContext.incompatibleReplaysPath, bytes)
+    private fun handleUpload(ctx: Context, uploadedFile: UploadedFile, parserContext: ParserContext) {
+        when(uploadedFile.extension != REPLAY_EXTENSION) {
+            true -> ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(invalidExtensionError)
+            else -> uploadedFile.content
+                .use { input -> handleReplay(ctx, uploadedFile.name, input, parserContext) }
         }
-        return parseResponse
+    }
+
+    private fun handleReplay(ctx: Context, fileName: String, input: InputStream, parserContext: ParserContext) {
+        val bytes = input.readBytes()
+
+        val response = parser.parseReplay(bytes)
+        when (response) {
+            is SuccessfulParseResponse<Replay> -> ctx.json(transformer.transform(fileName, response.replay))
+            else -> {
+                saveReplay(parserContext.incompatibleReplaysPath, bytes)
+                ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(response)
+            }
+        }
     }
 
     private fun saveReplay(directory: String, bytes: ByteArray) {
@@ -128,12 +112,6 @@ fun main(args: Array<String>) {
     val port = getEnvVar("PORT", WebServer.DEFAULT_PORT.toString()).toInt()
 
     val parserContext = ParserContext(
-        rattletrapExecutable =
-            getRequiredEnvVar("RATTLETRAP_EXECUTABLE"),
-        parserBufferSize =
-            getEnvVar("PARSER_BUFFER_SIZE", ParserContext.DEFAULT_PARSER_BUFFER_SIZE.toString()).toInt(),
-        parserTimeoutSeconds =
-            getEnvVar("PARSER_TIMEOUT", ParserContext.DEFAULT_PARSER_TIMEOUT.toString()).toLong(),
         saveIncompatibleReplays =
             getEnvVar("SAVE_INCOMPATIBLE_REPLAYS", ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
         incompatibleReplaysPath =
@@ -142,10 +120,6 @@ fun main(args: Array<String>) {
 
     val webServer = WebServer()
     webServer.start(env, port, parserContext)
-}
-
-private fun getRequiredEnvVar(key: String): String {
-    return System.getenv(key) ?: throw NullPointerException("Environment variable '$key' not set")
 }
 
 private fun getEnvVar(key: String, default: String): String {
