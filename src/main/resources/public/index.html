@@ -2,119 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
 
-    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.2.0/css/solid.css" integrity="sha384-wnAC7ln+XN0UKdcPvJvtqIH3jOjs9pnKnq9qX68ImXvOGz2JuFoEiCjT8jyZQX2z" crossorigin="anonymous">
-    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.2.0/css/fontawesome.css" integrity="sha384-HbmWTHay9psM8qyzEKPc8odH4DsOuzdejtnr+OFtDmOcIVnhgReQ4GZBH7uwcjf6" crossorigin="anonymous">
-    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <link rel="stylesheet" href="/style.css" />
+    <link crossorigin="anonymous" href="//use.fontawesome.com/releases/v5.2.0/css/solid.css"
+          integrity="sha384-wnAC7ln+XN0UKdcPvJvtqIH3jOjs9pnKnq9qX68ImXvOGz2JuFoEiCjT8jyZQX2z" rel="stylesheet">
+    <link crossorigin="anonymous" href="//use.fontawesome.com/releases/v5.2.0/css/fontawesome.css"
+          integrity="sha384-HbmWTHay9psM8qyzEKPc8odH4DsOuzdejtnr+OFtDmOcIVnhgReQ4GZBH7uwcjf6" rel="stylesheet">
+    <link crossorigin="anonymous" href="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet"/>
 
     <title>Rocket League Replay Parser</title>
 </head>
 <body>
-    <div class="container">
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <h1 class="text-center display-4">Rocket League Replay Parser</h1>
-                <p class="lead text-center">Extract data out of your replay files</p>
-            </div>
+<div class="container">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="text-center display-4">Rocket League Replay Parser</h1>
+            <p class="lead text-center">Extract data out of your replay files</p>
         </div>
+    </div>
 
-        <div class="card">
-            <div class="card-body">
-                <div id="file-upload">
-                    <h5>Select replays from your computer</h5>
-                    <form id="upload-form">
-                        <div class="form-inline">
-                            <div class="form-group">
-                                <input type="file" name="replay" id="replay-file">
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary" id="js-upload-submit">Upload replay</button>
+    <div class="card">
+        <div class="card-body">
+            <div id="file-upload">
+                <h5>Select replays from your computer</h5>
+                <form id="upload-form">
+                    <div class="form-inline">
+                        <div class="form-group">
+                            <input id="replay-file" name="replay" type="file">
                         </div>
-                    </form>
-                    <small class="text-muted">Replays are usually found in <i>Documents\My Games\Rocket League\TAGame\Demos</i></small>
-                </div>
+                        <button class="btn btn-sm btn-primary" id="js-upload-submit" type="submit">Upload replay
+                        </button>
+                    </div>
+                </form>
+                <small class="text-muted">Replays are usually found in <i>Documents\My Games\Rocket
+                    League\TAGame\Demos</i></small>
+            </div>
 
-                <div id="file-drag">
-                    <h5>Or drag and drop replays below</h5>
-                    <div class="card text-center align-middle">
-                        <div class="card-body">
-                            <div id="drop-zone" class="upload-drop-zone">
-                                Drag and drop replay files here
-                            </div>
+            <div id="file-drag">
+                <h5>Or drag and drop replays below</h5>
+                <div class="card text-center align-middle">
+                    <div class="card-body">
+                        <div class="upload-drop-zone" id="drop-zone">
+                            Drag and drop replay files here
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div id="replays" class="row">
-
-        </div>
     </div>
 
-    <script type="text/x-handlebars-template" id="replay-error-template">
-        <div class="card replay" id="replay-{{replayId}}">
-            <div class="card-body replay-content">
-                <h5>Replay</h5>
-                <hr class="col-11">
-                <p><strong>Failed to parse replay</strong></p>
-                <span>The replay file has been saved to help fix the parser and will be removed when fixed.</span>
-            </div>
+    <div class="row" id="replays">
+
+    </div>
+</div>
+
+<script id="replay-error-template" type="text/x-handlebars-template">
+    <div class="card replay" id="replay-{{replayId}}">
+        <div class="card-body replay-content">
+            <h5>Replay</h5>
+            <hr class="col-11">
+            <p><strong>Failed to parse replay</strong></p>
+            <span>The replay file has been saved to help fix the parser and will be removed when fixed.</span>
         </div>
-    </script>
+    </div>
+</script>
 
-    <script type="text/x-handlebars-template" id="replay-shell-template">
-        <div class="card replay" id="replay-{{replayId}}">
-            <div class="card-body replay-content">
-                <h5>Replay</h5>
-                <hr class="col-11">
-                <p>Loading...</p>
-            </div>
+<script id="replay-shell-template" type="text/x-handlebars-template">
+    <div class="card replay" id="replay-{{replayId}}">
+        <div class="card-body replay-content">
+            <h5>Replay</h5>
+            <hr class="col-11">
+            <p>Loading...</p>
         </div>
-    </script>
+    </div>
+</script>
 
-    <script type="text/x-handlebars-template" id="replay-template">
-        <div class="card replay">
-            <div class="card-body">
-                <h5>Replay</h5>
-                <hr class="col-11">
-                <dl class="row">
-                    <dt class="col-2">Goals</dt>
-                    <dd class="col-10">
-                        <span class="blue-team"><strong>{{teams.0.goals}}</strong></span>
-                        -
-                        <span class="orange-team"><strong>{{teams.1.goals}}</strong></span>
-                    </dd>
+<script id="replay-template" type="text/x-handlebars-template">
+    <div class="card replay">
+        <div class="card-body">
+            <h5>Replay</h5>
+            <hr class="col-11">
+            <dl class="row">
+                <dt class="col-2">Goals</dt>
+                <dd class="col-10">
+                    <span class="blue-team"><strong>{{teams.0.goals}}</strong></span>
+                    -
+                    <span class="orange-team"><strong>{{teams.1.goals}}</strong></span>
+                </dd>
 
-                    <dt class="col-2">Name</dt>
-                    <dd class="col-10">{{name}}</dd>
+                <dt class="col-2">Name</dt>
+                <dd class="col-10">{{name}}</dd>
 
-                    <dt class="col-2">Id</dt>
-                    <dd class="col-10">{{id}}</dd>
-                </dl>
+                <dt class="col-2">Id</dt>
+                <dd class="col-10">{{id}}</dd>
+            </dl>
 
-                <h5>Teams</h5>
-                <hr class="col-12">
+            <h5>Teams</h5>
+            <hr class="col-12">
 
-                <table class="table table-sm">
-                    <thead class="table-blue-team text-white">
-                    <tr>
-                        <th scope="col">Player</th>
-                        <th scope="col">Score</th>
-                        <th scope="col">Goals</th>
-                        <th scope="col">Assists</th>
-                        <th scope="col">Saves</th>
-                        <th scope="col">Shots</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#each teams.0.players}}
-                        <tr>
-                            <th scope="row">
-                                <a data-toggle="popover"
-                                   title="{{name}}"
-                                   data-content="
+            <table class="table table-sm">
+                <thead class="table-blue-team text-white">
+                <tr>
+                    <th scope="col">Player</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Goals</th>
+                    <th scope="col">Assists</th>
+                    <th scope="col">Saves</th>
+                    <th scope="col">Shots</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each teams.0.players}}
+                <tr>
+                    <th scope="row">
+                        <a data-toggle="popover"
+                           title="{{name}}"
+                           data-content="
                                        <strong>Field of view</strong>: {{camera_settings.field_of_view}}<br/>
                                        <strong>Distance</strong>: {{camera_settings.distance}}<br/>
                                        <strong>Height</strong>: {{camera_settings.height}}<br/>
@@ -124,36 +129,36 @@
                                        <strong>Transition speed</strong>: {{float camera_settings.transition_speed}}<br/>
                                        <br/>
                                        <strong>Steering sensitivity</strong>: {{float steering_sensitivity}}">
-                                    {{name}}
-                                </a>
-                            </th>
-                            <td>{{score}}</td>
-                            <td>{{goals}}</td>
-                            <td>{{assists}}</td>
-                            <td>{{saves}}</td>
-                            <td>{{shots}}</td>
-                        </tr>
-                    {{/each}}
-                    </tbody>
-                </table>
-                <table class="table table-sm">
-                    <thead class="table-orange-team text-white">
-                    <tr>
-                        <th scope="col">Player</th>
-                        <th scope="col">Score</th>
-                        <th scope="col">Goals</th>
-                        <th scope="col">Assists</th>
-                        <th scope="col">Saves</th>
-                        <th scope="col">Shots</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#each teams.1.players}}
-                    <tr>
-                        <th scope="row">
-                            <a data-toggle="popover"
-                               title="{{name}}"
-                               data-content="
+                            {{name}}
+                        </a>
+                    </th>
+                    <td>{{score}}</td>
+                    <td>{{goals}}</td>
+                    <td>{{assists}}</td>
+                    <td>{{saves}}</td>
+                    <td>{{shots}}</td>
+                </tr>
+                {{/each}}
+                </tbody>
+            </table>
+            <table class="table table-sm">
+                <thead class="table-orange-team text-white">
+                <tr>
+                    <th scope="col">Player</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Goals</th>
+                    <th scope="col">Assists</th>
+                    <th scope="col">Saves</th>
+                    <th scope="col">Shots</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each teams.1.players}}
+                <tr>
+                    <th scope="row">
+                        <a data-toggle="popover"
+                           title="{{name}}"
+                           data-content="
                                        <strong>Field of view</strong>: {{camera_settings.field_of_view}}<br/>
                                        <strong>Distance</strong>: {{camera_settings.distance}}<br/>
                                        <strong>Height</strong>: {{camera_settings.height}}<br/>
@@ -163,47 +168,53 @@
                                        <strong>Transition speed</strong>: {{float camera_settings.transition_speed}}<br/>
                                        <br/>
                                        <strong>Steering sensitivity</strong>: {{float steering_sensitivity}}">
-                                {{name}}
-                            </a>
-                        </th>
-                        <td>{{score}}</td>
-                        <td>{{goals}}</td>
-                        <td>{{assists}}</td>
-                        <td>{{saves}}</td>
-                        <td>{{shots}}</td>
+                            {{name}}
+                        </a>
+                    </th>
+                    <td>{{score}}</td>
+                    <td>{{goals}}</td>
+                    <td>{{assists}}</td>
+                    <td>{{saves}}</td>
+                    <td>{{shots}}</td>
+                </tr>
+                {{/each}}
+                </tbody>
+            </table>
+
+            <h5>Demolitions</h5>
+            <hr class="col-xs-12">
+            <div class="demolitions">
+                <table class="table table-borderless">
+                    <thead>
+                    <tr>
+                        <th scope="col">Attacker</th>
+                        <th scope="col">Victim</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each demolitions}}
+                    <tr>
+                        <td>{{attacker.name}}</td>
+                        <td>{{victim.name}}</td>
                     </tr>
                     {{/each}}
                     </tbody>
                 </table>
-
-                <h5>Demolitions</h5>
-                <hr class="col-xs-12">
-                <div class="demolitions">
-                    <table class="table table-borderless">
-                        <thead>
-                            <tr>
-                                <th scope="col">Attacker</th>
-                                <th scope="col">Victim</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {{#each demolitions}}
-                        <tr>
-                            <td>{{attacker.name}}</td>
-                            <td>{{victim.name}}</td>
-                        </tr>
-                        {{/each}}
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
-    </script>
+    </div>
+</script>
 
-    <script src="//code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js" integrity="sha256-+JMHsXRyeTsws/tzbIh5YHQxRdKCuNjmvNcTFtY6DLc=" crossorigin="anonymous"></script>
-    <script src="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <script src="script.js"></script>
+<script crossorigin="anonymous" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha256-+JMHsXRyeTsws/tzbIh5YHQxRdKCuNjmvNcTFtY6DLc=" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        src="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

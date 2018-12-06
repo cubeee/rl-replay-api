@@ -5,7 +5,7 @@ import com.x7ff.rl.replay.api.model.response.FailedParseResponse
 import com.x7ff.rl.replay.api.model.response.ParseResponse
 import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
 
-class ReplayKtParser: ReplayParser<Replay> {
+class ReplayKtParser : ReplayParser<Replay> {
 
     override fun parseReplay(bytes: ByteArray): ParseResponse<Replay> {
         return try {
@@ -21,7 +21,7 @@ class ReplayKtParser: ReplayParser<Replay> {
         }
     }
 
-    private fun parseReplay(bytes: ByteArray, parseFrames: Boolean = true)
-            = SuccessfulParseResponse(Replay.parse(bytes, parseFrames))
+    private fun parseReplay(bytes: ByteArray, parseFrames: Boolean = true) =
+        SuccessfulParseResponse(Replay.parse(bytes, parseFrames))
 
 }

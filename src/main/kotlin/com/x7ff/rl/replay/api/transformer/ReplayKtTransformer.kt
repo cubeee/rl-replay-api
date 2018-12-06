@@ -24,7 +24,7 @@ data class ActorInfo(
     val values: MutableMap<String, Any?>
 )
 
-class MainReplayTransformer: ReplayTransformer<com.x7ff.parser.replay.Replay> {
+class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
 
     override fun transform(fileName: String, parsedReplay: com.x7ff.parser.replay.Replay): Replay {
         val properties = parsedReplay.header.properties
@@ -86,7 +86,8 @@ class MainReplayTransformer: ReplayTransformer<com.x7ff.parser.replay.Replay> {
                 val playerActorId = values["Engine.Pawn:PlayerReplicationInfo"]
 
                 if (actorData.typeName == "TAGame.Default__PRI_TA" && actorData.className == "TAGame.PRI_TA"
-                    && playerName is String) {
+                    && playerName is String
+                ) {
                     val uniqueId = values["Engine.PlayerReplicationInfo:UniqueId"]
                     val steeringSensitivity = values["TAGame.PRI_TA:SteeringSensitivity"]
 

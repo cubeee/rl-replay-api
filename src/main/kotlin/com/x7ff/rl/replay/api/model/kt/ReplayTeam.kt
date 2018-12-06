@@ -21,10 +21,8 @@ data class ReplayTeam(
     }
 
     companion object {
-        fun List<ReplayPlayer>.createBlueTeam(properties: PropertyList)
-                = createTeam(0, "Blue", properties, this)
-        fun List<ReplayPlayer>.createOrangeTeam(properties: PropertyList)
-                = createTeam(1, "Orange", properties, this)
+        fun List<ReplayPlayer>.createBlueTeam(properties: PropertyList) = createTeam(0, "Blue", properties, this)
+        fun List<ReplayPlayer>.createOrangeTeam(properties: PropertyList) = createTeam(1, "Orange", properties, this)
 
         private fun createTeam(id: Int, name: String, properties: PropertyList, players: List<ReplayPlayer>): Team {
             return ReplayTeam(

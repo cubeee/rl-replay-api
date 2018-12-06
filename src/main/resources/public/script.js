@@ -9,14 +9,14 @@ var renderError = Handlebars.compile(replayErrorTemplate);
 var replayTemplate = document.getElementById('replay-template').innerHTML;
 var renderReplay = Handlebars.compile(replayTemplate);
 
-Handlebars.registerHelper('float', function(text) {
+Handlebars.registerHelper('float', function (text) {
     return new Handlebars.SafeString(parseFloat(text).toFixed(1));
 });
 
-+ function($) {
++function ($) {
     'use strict';
 
-    var enablePopovers = function() {
+    var enablePopovers = function () {
         $('[data-toggle="popover"]').popover({
             html: true,
             placement: 'right',
@@ -43,9 +43,9 @@ Handlebars.registerHelper('float', function(text) {
             contentType: false,
             processData: false,
             cache: false
-        }).done(function(replay) {
+        }).done(function (replay) {
             addReplay(shellId, replay);
-        }).fail(function(response) {
+        }).fail(function (response) {
             var responseJson = JSON.parse(response.responseText);
             var error = response.responseText;
             if (responseJson["error"]) {

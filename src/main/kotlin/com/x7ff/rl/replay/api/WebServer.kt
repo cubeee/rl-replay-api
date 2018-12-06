@@ -34,7 +34,8 @@ class WebServer {
         const val DEFAULT_ENV = "dev"
         const val DEFAULT_PORT = 7000
 
-        private val invalidExtensionError = ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension")
+        private val invalidExtensionError =
+            ErrorResponse("Invalid replay file uploaded. Expecting files with '$REPLAY_EXTENSION' extension")
     }
 
     private val parser = ReplayKtParser()
@@ -46,7 +47,7 @@ class WebServer {
         val app = Javalin.create()
         app.port(port)
 
-        when(env) {
+        when (env) {
             "prod" -> app.enableStaticFiles("/public")
             else -> app.enableStaticFiles("src/main/resources/public/", Location.EXTERNAL)
         }
@@ -66,7 +67,7 @@ class WebServer {
     }
 
     private fun handleUpload(ctx: Context, uploadedFile: UploadedFile, parserContext: ParserContext) {
-        when(uploadedFile.extension != REPLAY_EXTENSION) {
+        when (uploadedFile.extension != REPLAY_EXTENSION) {
             true -> ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(invalidExtensionError)
             else -> uploadedFile.content
                 .use { input -> handleReplay(ctx, uploadedFile.name, input, parserContext) }
@@ -113,9 +114,9 @@ fun main(args: Array<String>) {
 
     val parserContext = ParserContext(
         saveIncompatibleReplays =
-            getEnvVar("SAVE_INCOMPATIBLE_REPLAYS", ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
+        getEnvVar("SAVE_INCOMPATIBLE_REPLAYS", ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
         incompatibleReplaysPath =
-            getEnvVar("INCOMPATIBLE_REPLAYS_DIR", ParserContext.DEFAULT_INCOMPATIBLE_REPLAYS_DIR)
+        getEnvVar("INCOMPATIBLE_REPLAYS_DIR", ParserContext.DEFAULT_INCOMPATIBLE_REPLAYS_DIR)
     )
 
     val webServer = WebServer()
