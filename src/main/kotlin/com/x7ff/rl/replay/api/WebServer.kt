@@ -1,7 +1,13 @@
 package com.x7ff.rl.replay.api
 
+import com.x7ff.parser.executeAndMeasureTimeNanos
 import com.x7ff.parser.replay.Replay
+import com.x7ff.rl.replay.api.events.EventLogger
+import com.x7ff.rl.replay.api.events.EventLoggerConfig
+import com.x7ff.rl.replay.api.events.HttpRequestEvent
+import com.x7ff.rl.replay.api.events.ParsingEvent
 import com.x7ff.rl.replay.api.model.response.ErrorResponse
+import com.x7ff.rl.replay.api.model.response.PartiallySuccessfulParseResponse
 import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
 import com.x7ff.rl.replay.api.parser.ReplayKtParser
 import com.x7ff.rl.replay.api.transformer.MainReplayTransformer
@@ -25,7 +31,9 @@ data class ParserContext(
     }
 }
 
-class WebServer {
+class WebServer(
+    private val eventLogger: EventLogger?
+) {
     companion object {
         private const val REPLAY_UPLOAD_PATH = "/upload"
         private const val REQUEST_FILE_NAME = "replay"
@@ -62,6 +70,20 @@ class WebServer {
             }
         }
 
+        app.before { ctx -> ctx.attribute("req_start", System.nanoTime()) }
+        app.after { ctx ->
+            val startTime: Long? = ctx.attribute("req_start")
+            startTime?.let { start ->
+                eventLogger?.logEvent(HttpRequestEvent(
+                    duration = System.nanoTime() - start,
+                    userAgent = ctx.userAgent(),
+                    remoteAddress = ctx.request().remoteAddr,
+                    method = ctx.method(),
+                    path = ctx.path()
+                ))
+            }
+        }
+
         println("Listening on port $port...")
         app.start()
     }
@@ -77,11 +99,19 @@ class WebServer {
     private fun handleReplay(ctx: Context, fileName: String, input: InputStream, parserContext: ParserContext) {
         val bytes = input.readBytes()
 
-        val response = parser.parseReplay(bytes)
+        val (response, parsingTime) = executeAndMeasureTimeNanos {
+            parser.parseReplay(bytes)
+        }
+
         when (response) {
-            is SuccessfulParseResponse<Replay> -> ctx.json(transformer.transform(fileName, response.replay))
+            is SuccessfulParseResponse<Replay>, is PartiallySuccessfulParseResponse<Replay> -> {
+                val success = response is SuccessfulParseResponse<Replay>
+                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, parsingTime, success = success))
+                ctx.json(transformer.transform(fileName, response.replay!!))
+            }
             else -> {
                 saveReplay(parserContext.incompatibleReplaysPath, bytes)
+                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, parsingTime, success = false))
                 ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(response)
             }
         }
@@ -112,15 +142,31 @@ fun main(args: Array<String>) {
     val env = getEnvVar("ENV", WebServer.DEFAULT_ENV)
     val port = getEnvVar("PORT", WebServer.DEFAULT_PORT.toString()).toInt()
 
+    val eventLoggerConfig = with(EventLoggerConfig) {
+        val enabled = getEnvVar("EVENT_LOGGING_ENABLED", DEFAULT_ENABLED).toBoolean()
+        when (enabled) {
+            true -> EventLoggerConfig(
+                host = getEnvVar("EVENT_LOGGING_HOST", DEFAULT_HOST),
+                port = getEnvVar("EVENT_LOGGING_PORT", DEFAULT_PORT).toInt(),
+                source = getEnvVar("EVENT_LOGGING_SOURCE", DEFAULT_SOURCE)
+            )
+            else -> null
+        }
+    }
+
     val parserContext = ParserContext(
-        saveIncompatibleReplays =
-        getEnvVar("SAVE_INCOMPATIBLE_REPLAYS", ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
-        incompatibleReplaysPath =
-        getEnvVar("INCOMPATIBLE_REPLAYS_DIR", ParserContext.DEFAULT_INCOMPATIBLE_REPLAYS_DIR)
+        saveIncompatibleReplays = getEnvVar("SAVE_INCOMPATIBLE_REPLAYS",
+            ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
+        incompatibleReplaysPath = getEnvVar("INCOMPATIBLE_REPLAYS_DIR",
+            ParserContext.DEFAULT_INCOMPATIBLE_REPLAYS_DIR)
     )
 
-    val webServer = WebServer()
-    webServer.start(env, port, parserContext)
+    val eventLogger = when {
+        eventLoggerConfig != null -> EventLogger(eventLoggerConfig)
+        else -> null
+    }
+
+    WebServer(eventLogger).start(env, port, parserContext)
 }
 
 private fun getEnvVar(key: String, default: String): String {

@@ -1,10 +1,12 @@
 buildscript {
     ext {
-        kotlinVersion = '1.3.10'
+        kotlinVersion = '1.3.11'
         javalinVersion = '1.7.0'
         slf4jVersion = '1.7.25'
         jacksonVersion = '2.9.5'
         replayktVersion = '0.1.5'
+        dropwizardMetricsVersion = '4.0.0'
+        metricsGelfVersion = '1.0.1'
     }
 
     repositories {
@@ -17,7 +19,7 @@ buildscript {
 }
 
 group 'com.x7ff'
-version '0.1'
+version '0.3'
 
 apply plugin: 'kotlin'
 
@@ -27,13 +29,17 @@ repositories {
 }
 
 dependencies {
-    compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: kotlinVersion
-    compile group: "io.javalin", name: "javalin", version: javalinVersion
-    compile group: "org.slf4j", name: "slf4j-simple", version: slf4jVersion
-    compile group: "com.github.cubeee.replay-kt", name: "replay-kt", version: replayktVersion
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: kotlinVersion
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-reflect", version: kotlinVersion
+    implementation group: "io.javalin", name: "javalin", version: javalinVersion
+    implementation group: "org.slf4j", name: "slf4j-simple", version: slf4jVersion
+    implementation group: "com.github.cubeee.replay-kt", name: "replay-kt", version: replayktVersion
 
-    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
-    compile group: "com.fasterxml.jackson.module", name: "jackson-module-kotlin", version: jacksonVersion
+    implementation group: "io.dropwizard.metrics", name: "metrics-core", version: dropwizardMetricsVersion
+    implementation group: "org.graylog.metrics", name: "metrics-gelf", version: metricsGelfVersion
+
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.module", name: "jackson-module-kotlin", version: jacksonVersion
 }
 
 jar {
