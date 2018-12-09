@@ -18,16 +18,17 @@ import io.javalin.embeddedserver.Location
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.concurrent.Executors
 import java.util.zip.CRC32
 import javax.servlet.http.HttpServletResponse
 
-data class ParserContext(
-    val saveIncompatibleReplays: Boolean,
-    val incompatibleReplaysPath: String
+data class ParserConfig(
+    val saveReplays: Boolean,
+    val replaysPath: String
 ) {
     companion object {
-        const val DEFAULT_SAVE_INCOMPATIBLE_REPLAYS = false
-        const val DEFAULT_INCOMPATIBLE_REPLAYS_DIR = "incompatible_replays"
+        const val DEFAULT_SAVE_REPLAYS = false
+        const val DEFAULT_REPLAYS_DIR = "replays"
     }
 }
 
@@ -48,8 +49,9 @@ class WebServer(
 
     private val parser = ReplayKtParser()
     private val transformer = MainReplayTransformer()
+    private val replaySaverExecutor = Executors.newSingleThreadExecutor()
 
-    fun start(env: String, port: Int, parserContext: ParserContext) {
+    fun start(env: String, port: Int, parserConfig: ParserConfig) {
         println("Starting in '$env' environment...")
 
         val app = Javalin.create()
@@ -63,7 +65,7 @@ class WebServer(
         app.post(REPLAY_UPLOAD_PATH) { ctx ->
             val uploadedFile = ctx.uploadedFile(REQUEST_FILE_NAME)
             when (uploadedFile) {
-                is UploadedFile -> handleUpload(ctx, uploadedFile, parserContext)
+                is UploadedFile -> handleUpload(ctx, uploadedFile, parserConfig)
                 else -> ctx
                     .status(HttpServletResponse.SC_BAD_REQUEST)
                     .json(ErrorResponse("No replay file name given"))
@@ -88,16 +90,20 @@ class WebServer(
         app.start()
     }
 
-    private fun handleUpload(ctx: Context, uploadedFile: UploadedFile, parserContext: ParserContext) {
+    private fun handleUpload(ctx: Context, uploadedFile: UploadedFile, parserConfig: ParserConfig) {
         when (uploadedFile.extension != REPLAY_EXTENSION) {
             true -> ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(invalidExtensionError)
             else -> uploadedFile.content
-                .use { input -> handleReplay(ctx, uploadedFile.name, input, parserContext) }
+                .use { input -> handleReplay(ctx, uploadedFile.name, input, parserConfig) }
         }
     }
 
-    private fun handleReplay(ctx: Context, fileName: String, input: InputStream, parserContext: ParserContext) {
+    private fun handleReplay(ctx: Context, fileName: String, input: InputStream, parserConfig: ParserConfig) {
         val bytes = input.readBytes()
+
+        if (parserConfig.saveReplays) {
+            saveReplay(parserConfig.replaysPath, bytes)
+        }
 
         val (response, parsingTime) = executeAndMeasureTimeNanos {
             parser.parseReplay(bytes)
@@ -110,14 +116,13 @@ class WebServer(
                 ctx.json(transformer.transform(fileName, response.replay!!))
             }
             else -> {
-                saveReplay(parserContext.incompatibleReplaysPath, bytes)
                 eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, parsingTime, success = false))
                 ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(response)
             }
         }
     }
 
-    private fun saveReplay(directory: String, bytes: ByteArray) {
+    private fun saveReplay(directory: String, bytes: ByteArray) = replaySaverExecutor.submit {
         val id = with(CRC32()) {
             update(bytes)
             "%x".format(value)
@@ -154,11 +159,9 @@ fun main(args: Array<String>) {
         }
     }
 
-    val parserContext = ParserContext(
-        saveIncompatibleReplays = getEnvVar("SAVE_INCOMPATIBLE_REPLAYS",
-            ParserContext.DEFAULT_SAVE_INCOMPATIBLE_REPLAYS.toString()).toBoolean(),
-        incompatibleReplaysPath = getEnvVar("INCOMPATIBLE_REPLAYS_DIR",
-            ParserContext.DEFAULT_INCOMPATIBLE_REPLAYS_DIR)
+    val parserConfig = ParserConfig(
+        saveReplays = getEnvVar("SAVE_REPLAYS", ParserConfig.DEFAULT_SAVE_REPLAYS.toString()).toBoolean(),
+        replaysPath = getEnvVar("REPLAYS_DIR", ParserConfig.DEFAULT_REPLAYS_DIR)
     )
 
     val eventLogger = when {
@@ -166,7 +169,7 @@ fun main(args: Array<String>) {
         else -> null
     }
 
-    WebServer(eventLogger).start(env, port, parserContext)
+    WebServer(eventLogger).start(env, port, parserConfig)
 }
 
 private fun getEnvVar(key: String, default: String): String {

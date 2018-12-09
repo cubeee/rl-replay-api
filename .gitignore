@@ -1,9 +1,8 @@
 .*
-*.iml
 
 build/
 out/
-incompatible_replays/
+replays/
 
 !.gitignore
 !.dockerignore
