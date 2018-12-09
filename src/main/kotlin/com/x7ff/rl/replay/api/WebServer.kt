@@ -98,11 +98,12 @@ class WebServer(
         }
     }
 
-    private fun handleReplay(ctx: Context, fileName: String, input: InputStream, parserConfig: ParserConfig) {
+    private fun handleReplay(ctx: Context, uploadName: String, input: InputStream, parserConfig: ParserConfig) {
         val bytes = input.readBytes()
+        val fileName = "${bytes.crc32()}.replay"
 
         if (parserConfig.saveReplays) {
-            saveReplay(parserConfig.replaysPath, bytes)
+            saveReplay(fileName, parserConfig.replaysPath, bytes)
         }
 
         val (response, parsingTime) = executeAndMeasureTimeNanos {
@@ -112,33 +113,34 @@ class WebServer(
         when (response) {
             is SuccessfulParseResponse<Replay>, is PartiallySuccessfulParseResponse<Replay> -> {
                 val success = response is SuccessfulParseResponse<Replay>
-                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, parsingTime, success = success))
-                ctx.json(transformer.transform(fileName, response.replay!!))
+                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, uploadName, parsingTime, success = success))
+                ctx.json(transformer.transform(uploadName, response.replay!!))
             }
             else -> {
-                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, parsingTime, success = false))
+                eventLogger?.logEvent(ParsingEvent(fileName, bytes.size, uploadName, parsingTime, success = false))
                 ctx.status(HttpServletResponse.SC_BAD_REQUEST).json(response)
             }
         }
     }
 
-    private fun saveReplay(directory: String, bytes: ByteArray) = replaySaverExecutor.submit {
-        val id = with(CRC32()) {
-            update(bytes)
-            "%x".format(value)
-        }
-
+    private fun saveReplay(fileName: String, directory: String, bytes: ByteArray) = replaySaverExecutor.submit {
         val dir = File(directory)
         if (!dir.exists()) {
             dir.mkdirs()
         }
 
-        val file = File(dir, "$id.replay")
+        val file = File(dir, fileName)
         if (!file.exists()) {
             FileOutputStream(file).use { out ->
                 out.write(bytes)
             }
         }
+    }
+
+    private fun ByteArray.crc32(): String {
+        val crc32 = CRC32()
+        crc32.update(this)
+        return "%x".format(crc32.value)
     }
 
 }
