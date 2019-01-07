@@ -4,7 +4,7 @@ buildscript {
         javalinVersion = '1.7.0'
         slf4jVersion = '1.7.25'
         jacksonVersion = '2.9.5'
-        replayktVersion = '0.1.5'
+        replayktVersion = '0.1.7'
         dropwizardMetricsVersion = '4.0.0'
         metricsGelfVersion = '1.0.1'
     }
