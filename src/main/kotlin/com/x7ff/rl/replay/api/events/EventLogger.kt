@@ -14,12 +14,17 @@ class EventLogger(
 
     private val eventTransport: GelfTransport by lazy {
         val configuration = GelfConfiguration(InetSocketAddress(config.host, config.port))
-            .transport(GelfTransports.UDP)
+            .transport(GelfTransports.TCP)
             .queueSize(256)
             .connectTimeout(5000)
             .reconnectDelay(1000)
             .tcpNoDelay(true)
             .sendBufferSize(32768)
+        when (config.enableTls) {
+            true -> configuration.enableTls()
+            else -> configuration.disableTls()
+        }
+        configuration.disableTlsCertVerification()
         GelfTransports.create(configuration)
     }
 

@@ -155,7 +155,8 @@ fun main(args: Array<String>) {
             true -> EventLoggerConfig(
                 host = getEnvVar("EVENT_LOGGING_HOST", DEFAULT_HOST),
                 port = getEnvVar("EVENT_LOGGING_PORT", DEFAULT_PORT).toInt(),
-                source = getEnvVar("EVENT_LOGGING_SOURCE", DEFAULT_SOURCE)
+                source = getEnvVar("EVENT_LOGGING_SOURCE", DEFAULT_SOURCE),
+                enableTls = getEnvVar("EVENT_LOGGING_TLS", DEFAULT_ENABLE_TLS).toBoolean()
             )
             else -> null
         }
@@ -176,4 +177,8 @@ fun main(args: Array<String>) {
 
 private fun getEnvVar(key: String, default: String): String {
     return System.getenv(key) ?: default
+}
+
+private fun getOptionalEnvVar(key: String): String? {
+    return System.getenv(key)
 }
