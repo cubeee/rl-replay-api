@@ -7,6 +7,7 @@ import com.x7ff.parser.replay.attribute.UniqueIdAttribute
 import com.x7ff.parser.replay.property
 import com.x7ff.parser.replay.propertyOrNull
 import com.x7ff.parser.replay.stream.ActiveActor
+import com.x7ff.parser.replay.stream.DestroyedReplication
 import com.x7ff.parser.replay.stream.SpawnedReplication
 import com.x7ff.parser.replay.stream.UpdatedReplications
 import com.x7ff.rl.replay.api.model.kt.ReplayDemolition
@@ -20,19 +21,23 @@ data class ActorInfo(
     val typeName: String,
     val className: String,
     val name: String?,
-    val id: Long,
-    val values: MutableMap<String, Any?>
+    val id: Int,
+    val values: MutableMap<String, MutableSet<Any>>
 )
 
 class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
+
+    private fun MutableSet<Any>.firstOrNull() = asIterable().firstOrNull()
 
     override fun transform(fileName: String, parsedReplay: com.x7ff.parser.replay.Replay): Replay {
         val properties = parsedReplay.header.properties
         val playerStats = properties.property("PlayerStats") as List<PropertyList>
 
         val demolitions = mutableSetOf<ReplayDemolition>()
-        val playerCarIds = mutableMapOf<Int, Int>()
+        val currentActorIds = mutableSetOf<Int>()
+        val currentActors = mutableMapOf<Int, ActorInfo>()
         val carPlayerIds = mutableMapOf<Int, Int>()
+        val playerCarIds = mutableMapOf<Int, Int>()
 
         val players = playerStats
             .map { stats ->
@@ -50,46 +55,47 @@ class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
             }
             .toList()
 
-        for (frame in parsedReplay.frames) {
-            val replicationUpdates = frame.replications
-                .filter { replication -> replication.value is UpdatedReplications }
-                .map { replication -> replication.actor.first to replication.value as UpdatedReplications }
-
-            val actors = frame.replications
-                .filter { replication -> replication.value is SpawnedReplication }
-                .map { replication ->
-                    val spawn = replication.value as SpawnedReplication
-                    val actorId = replication.actor.first
-
-                    with(spawn) {
-                        actorId to ActorInfo(
-                            typeName = objectName,
-                            className = className,
-                            name = name,
+        parsedReplay.frames.forEach { frame ->
+            frame.replications.forEach { replication ->
+                val actorId = replication.actor.first.toInt()
+                val value = replication.value
+                when(value) {
+                    is DestroyedReplication -> {
+                        currentActorIds.remove(actorId)
+                        currentActors.remove(actorId)
+                        if (carPlayerIds.containsKey(actorId)) {
+                            val playerActorId = carPlayerIds[actorId]
+                            carPlayerIds.remove(playerActorId)
+                            playerCarIds.remove(playerActorId)
+                        }
+                    }
+                    is SpawnedReplication -> {
+                        currentActorIds.add(actorId)
+                        currentActors[actorId] = ActorInfo(
+                            typeName = value.objectName,
+                            className = value.className,
+                            name = value.name,
                             id = actorId,
                             values = mutableMapOf()
                         )
                     }
+                    is UpdatedReplications -> {
+                        val actualUpdate = value.updates.map { it.propertyName to mutableSetOf(it.data) }.toMap()
+                        currentActorIds.add(actorId)
+                        currentActors[actorId]?.values?.putAll(actualUpdate)
+                    }
                 }
-                .toMap()
-
-            replicationUpdates.onEach { update ->
-                val actorId = update.first
-
-                update.second.updates.forEach { actors[actorId]?.values?.put(it.propertyName, it.data) }
             }
 
-            for ((actorId, actorData) in actors) {
+            for ((actorId, actorData) in currentActors) {
                 val values = actorData.values
 
-                val playerName = values["Engine.PlayerReplicationInfo:PlayerName"]
-                val playerActorId = values["Engine.Pawn:PlayerReplicationInfo"]
-
+                val playerName = values["Engine.PlayerReplicationInfo:PlayerName"]?.firstOrNull()
                 if (actorData.typeName == "TAGame.Default__PRI_TA" && actorData.className == "TAGame.PRI_TA"
                     && playerName is String
                 ) {
-                    val uniqueId = values["Engine.PlayerReplicationInfo:UniqueId"]
-                    val steeringSensitivity = values["TAGame.PRI_TA:SteeringSensitivity"]
+                    val uniqueId = values["Engine.PlayerReplicationInfo:UniqueId"]?.firstOrNull()
+                    val steeringSensitivity = values["TAGame.PRI_TA:SteeringSensitivity"]?.firstOrNull()
 
                     if (uniqueId is UniqueIdAttribute) {
                         val player = players.firstOrNull { p -> p.onlineId == uniqueId.id }
@@ -104,12 +110,15 @@ class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
                     }
                 }
 
-                if (actorData.typeName == "Archetypes.Car.Car_Default" && playerActorId is ActiveActor) {
-                    playerCarIds[playerActorId.actorId] = actorId.toInt()
-                    carPlayerIds[actorId.toInt()] = playerActorId.actorId
+                val playerActor = actorData.values["Engine.Pawn:PlayerReplicationInfo"]?.firstOrNull()
+                if (actorData.typeName == "Archetypes.Car.Car_Default" && playerActor is ActiveActor) {
+                    val playerActorId = playerActor.actorId
+                    playerCarIds[playerActorId] = actorId
+                    carPlayerIds[actorId] = playerActorId
 
-                    val demolition = values["TAGame.Car_TA:ReplicatedDemolish"]
-                    if (demolition is DemolishAttribute) {
+                    val actorDemolitions = values["TAGame.Car_TA:ReplicatedDemolish"]
+                    actorDemolitions?.filter { demo -> demo is DemolishAttribute }?.onEach { demo ->
+                        val demolition = demo as DemolishAttribute
                         val attackerCarId = demolition.attackerActorId
                         val victimCarId = demolition.victimActorId
 
@@ -120,25 +129,26 @@ class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
                             demolitions.add(
                                 ReplayDemolition(
                                     attackerActorId = attackerPlayerId,
-                                    victimActorId = victimPlayerId
+                                    victimActorId = victimPlayerId,
+                                    attackerVelocity = demolition.attackerVelocity,
+                                    victimVelocity = demolition.victimVelocity
                                 )
                             )
                         }
                     }
+                    actorData.values.remove("TAGame.Car_TA:ReplicatedDemolish")
                 }
-
             }
 
-            replicationUpdates.onEach { update ->
-                val updates = update.second.updates
+            for ((_, actorData) in currentActors) {
+                val values = actorData.values
 
-                val profileSettings = updates
-                    .firstOrNull { it.propertyName == "TAGame.CameraSettingsActor_TA:ProfileSettings" }?.data
-                if (profileSettings is CameraSettingsAttribute) {
-                    val playerId = updates
-                        .firstOrNull { it.propertyName == "TAGame.CameraSettingsActor_TA:PRI" }?.data
-                    if (playerId is ActiveActor) {
-                        val player = players.firstOrNull { p -> p.id == playerId.actorId.toLong() }
+                val cameraSettingsActor = values["TAGame.CameraSettingsActor_TA:PRI"]?.firstOrNull()
+                if (actorData.typeName == "TAGame.Default__CameraSettingsActor_TA"
+                    && cameraSettingsActor is ActiveActor) {
+                    val profileSettings = values["TAGame.CameraSettingsActor_TA:ProfileSettings"]?.firstOrNull()
+                    if (profileSettings is CameraSettingsAttribute) {
+                        val player = players.firstOrNull { p -> p.id == cameraSettingsActor.actorId }
                         player?.cameraSettings = CameraSettings(
                             fov = profileSettings.fieldOfView.toInt(),
                             distance = profileSettings.distance.toInt(),
@@ -151,7 +161,6 @@ class MainReplayTransformer : ReplayTransformer<com.x7ff.parser.replay.Replay> {
                     }
                 }
             }
-
         }
 
         val blueTeam = players.createBlueTeam(properties)

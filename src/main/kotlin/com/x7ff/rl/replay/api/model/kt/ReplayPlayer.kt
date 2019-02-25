@@ -4,7 +4,7 @@ import com.x7ff.rl.replay.api.model.replay.CameraSettings
 import com.x7ff.rl.replay.api.model.replay.Player
 
 data class ReplayPlayer(
-    var id: Long = -1,
+    var id: Int = -1,
     val name: String,
     val onlineId: Long,
     val score: Int,
