@@ -4,6 +4,7 @@ import com.x7ff.parser.executeAndMeasureTimeNanos
 import com.x7ff.parser.replay.Replay
 import com.x7ff.rl.replay.api.events.EventLogger
 import com.x7ff.rl.replay.api.events.EventLoggerConfig
+import com.x7ff.rl.replay.api.events.EventLoggerConfig.Companion.DEFAULT_ENABLED
 import com.x7ff.rl.replay.api.events.HttpRequestEvent
 import com.x7ff.rl.replay.api.events.ParsingEvent
 import com.x7ff.rl.replay.api.model.response.ErrorResponse
@@ -149,17 +150,17 @@ fun main(args: Array<String>) {
     val env = getEnvVar("ENV", WebServer.DEFAULT_ENV)
     val port = getEnvVar("PORT", WebServer.DEFAULT_PORT.toString()).toInt()
 
-    val eventLoggerConfig = with(EventLoggerConfig) {
-        val enabled = getEnvVar("EVENT_LOGGING_ENABLED", DEFAULT_ENABLED).toBoolean()
-        when (enabled) {
-            true -> EventLoggerConfig(
+    val enabled = getEnvVar("EVENT_LOGGING_ENABLED", DEFAULT_ENABLED).toBoolean()
+    val eventLoggerConfig = when (enabled) {
+        true -> with(EventLoggerConfig) {
+            EventLoggerConfig(
                 host = getEnvVar("EVENT_LOGGING_HOST", DEFAULT_HOST),
                 port = getEnvVar("EVENT_LOGGING_PORT", DEFAULT_PORT).toInt(),
                 source = getEnvVar("EVENT_LOGGING_SOURCE", DEFAULT_SOURCE),
                 enableTls = getEnvVar("EVENT_LOGGING_TLS", DEFAULT_ENABLE_TLS).toBoolean()
             )
-            else -> null
         }
+        else -> null
     }
 
     val parserConfig = ParserConfig(
@@ -167,18 +168,13 @@ fun main(args: Array<String>) {
         replaysPath = getEnvVar("REPLAYS_DIR", ParserConfig.DEFAULT_REPLAYS_DIR)
     )
 
-    val eventLogger = when {
-        eventLoggerConfig != null -> EventLogger(eventLoggerConfig)
+    val eventLogger = when (eventLoggerConfig) {
+        is EventLoggerConfig -> EventLogger(eventLoggerConfig)
         else -> null
     }
 
     WebServer(eventLogger).start(env, port, parserConfig)
 }
 
-private fun getEnvVar(key: String, default: String): String {
-    return System.getenv(key) ?: default
-}
-
-private fun getOptionalEnvVar(key: String): String? {
-    return System.getenv(key)
-}
+private fun getEnvVar(key: String, default: String) = System.getenv(key) ?: default
+private fun getOptionalEnvVar(key: String) = System.getenv(key)
