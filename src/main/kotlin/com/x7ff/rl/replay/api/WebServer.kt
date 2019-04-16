@@ -146,7 +146,7 @@ class WebServer(
 
 }
 
-fun main(args: Array<String>) {
+fun main() {
     val env = getEnvVar("ENV", WebServer.DEFAULT_ENV)
     val port = getEnvVar("PORT", WebServer.DEFAULT_PORT.toString()).toInt()
 
