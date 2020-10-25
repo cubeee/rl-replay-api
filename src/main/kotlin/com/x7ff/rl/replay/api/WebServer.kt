@@ -7,6 +7,7 @@ import com.x7ff.rl.replay.api.events.EventLoggerConfig
 import com.x7ff.rl.replay.api.events.EventLoggerConfig.Companion.DEFAULT_ENABLED
 import com.x7ff.rl.replay.api.events.HttpRequestEvent
 import com.x7ff.rl.replay.api.events.ParsingEvent
+import com.x7ff.rl.replay.api.forwarder.BallchasingReplayForwarder
 import com.x7ff.rl.replay.api.model.response.ErrorResponse
 import com.x7ff.rl.replay.api.model.response.PartiallySuccessfulParseResponse
 import com.x7ff.rl.replay.api.model.response.SuccessfulParseResponse
@@ -50,7 +51,8 @@ class WebServer(
 
     private val parser = ReplayKtParser()
     private val transformer = MainReplayTransformer()
-    private val replaySaverExecutor = Executors.newSingleThreadExecutor()
+    private val forwarders = listOf(BallchasingReplayForwarder())
+    private val executor = Executors.newSingleThreadExecutor()
 
     fun start(env: String, port: Int, parserConfig: ParserConfig) {
         println("Starting in '$env' environment...")
@@ -111,6 +113,8 @@ class WebServer(
             parser.parseReplay(bytes)
         }
 
+        forwardReplay(uploadName, bytes)
+
         when (response) {
             is SuccessfulParseResponse<Replay>, is PartiallySuccessfulParseResponse<Replay> -> {
                 val success = response is SuccessfulParseResponse<Replay>
@@ -124,7 +128,7 @@ class WebServer(
         }
     }
 
-    private fun saveReplay(fileName: String, directory: String, bytes: ByteArray) = replaySaverExecutor.submit {
+    private fun saveReplay(fileName: String, directory: String, bytes: ByteArray) = executor.submit {
         val dir = File(directory)
         if (!dir.exists()) {
             dir.mkdirs()
@@ -134,6 +138,14 @@ class WebServer(
         if (!file.exists()) {
             FileOutputStream(file).use { out ->
                 out.write(bytes)
+            }
+        }
+    }
+
+    private fun forwardReplay(fileName: String, bytes: ByteArray) {
+        forwarders.forEach { forwarder ->
+            executor.submit {
+                forwarder.forwardReplay(fileName, bytes)
             }
         }
     }
