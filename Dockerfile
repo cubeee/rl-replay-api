@@ -1,11 +1,11 @@
-FROM gradle:4.10.2-jdk8-alpine AS BUILD_IMAGE
+FROM openjdk:8u181-jdk AS BUILD_IMAGE
 ENV APP_HOME=/home/gradle/project/
 RUN mkdir -p $APP_HOME/src
 WORKDIR $APP_HOME
-COPY build.gradle gradlew $APP_HOME
+COPY build.gradle gradlew $APP_HOME/
 COPY gradle $APP_HOME/gradle
 COPY src $APP_HOME/src
-RUN gradle jar
+RUN chmod +x ./gradlew && ./gradlew jar
 
 FROM openjdk:8u181-jre
 WORKDIR /rl-replay-api/

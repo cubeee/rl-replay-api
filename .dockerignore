@@ -1,4 +1,7 @@
+.gradle/
+.idea/
 build/
 out/
+replays/
 incompatible_replays/
 **/resources/replays/*
